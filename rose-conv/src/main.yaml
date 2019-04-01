@@ -1,0 +1,19 @@
+name: Rose Converters
+version: "v1"
+author: Ralph Minderhoud <ralphminderhoud@gmail.com>
+about: Converts various ROSE Online formats
+
+args:
+    - out_dir:
+        help: Directory to output converted files
+        default_value: ./out/
+        short: o
+        global: true
+
+subcommands:
+    - map:
+        about: Convert ROSE map files
+        args:
+            - map_dir:
+                help: Map directory containing zon, him, til and ifo files
+                required: true

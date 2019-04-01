@@ -1,0 +1,31 @@
+name: VFS Extractor
+version: "v2"
+author: Ralph Minderhoud <ralphminderhoud@gmail.com>
+about: Extracts content from a ROSE Online VFS system
+args:
+    - idx:
+        help: Path to .idx file to load
+        required: true
+        index: 1
+    - out_dir:
+        help: Directory to output extracted files
+        default_value: out
+        short: o
+    - dry_run:
+        help: Executes program without modifying any files
+        long: dry-run
+        short: d
+    - flat:
+        help: Ignore hierarchy and extract all files to top-level of out dir
+        long: flat
+        short: flat
+    - verbose:
+        help: Prints extra information
+        long: verbose
+        short: v
+    - include:
+        help: Only extract files with these extensions
+        long: include
+        short: i
+        takes_value: true
+        multiple: true

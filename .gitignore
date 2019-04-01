@@ -1,0 +1,9 @@
+# Tools Dirs
+target/
+out/
+*.swp
+*.pyc
+
+# GODOT
+.import/
+*.import

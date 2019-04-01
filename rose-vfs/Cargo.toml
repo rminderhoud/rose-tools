@@ -1,0 +1,8 @@
+[package]
+name = "vfs_tool"
+version = "2.0.1"
+authors = ["Ralph Minderhoud <ralphminderhoud@gmail.com>"]
+
+[dependencies]
+clap = {version = "2.29", features = ["yaml"]}
+roselib = { path = "../rose-lib" }
