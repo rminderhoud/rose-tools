@@ -3,11 +3,9 @@ use std::io::SeekFrom;
 use std::iter;
 
 use failure::Error;
-use num;
+use io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use num::FromPrimitive as num_from;
-use io::{RoseFile, ReadRoseExt, WriteRoseExt};
 use utils::{Vector2, Vector3};
-
 
 /// Zone File
 pub type ZON = Zone;
@@ -214,7 +212,7 @@ impl RoseFile for Zone {
                             self.positions[h as usize][w as usize] = pos;
                         }
                     }
-                },
+                }
                 ZoneBlockType::EventPoints => {
                     let count = reader.read_i32()?;
                     for _ in 0..count {
@@ -223,13 +221,13 @@ impl RoseFile for Zone {
                         p.name = reader.read_string_u8()?;
                         self.event_points.push(p);
                     }
-                },
+                }
                 ZoneBlockType::Textures => {
                     let count = reader.read_i32()?;
                     for _ in 0..count {
                         self.textures.push(reader.read_string_u8()?);
                     }
-                },
+                }
                 ZoneBlockType::Tiles => {
                     let count = reader.read_i32()?;
                     for _ in 0..count {
@@ -243,7 +241,7 @@ impl RoseFile for Zone {
                         t.tile_type = reader.read_i32()?;
                         self.tiles.push(t);
                     }
-                },
+                }
                 ZoneBlockType::Economy => {
                     self.name = reader.read_string_u8()?;
                     self.is_underground = reader.read_i32()? != 0;
@@ -261,14 +259,14 @@ impl RoseFile for Zone {
                     self.chemical_consumption = reader.read_i32()?;
                     self.medicine_consumption = reader.read_i32()?;
                     self.food_consumption = reader.read_i32()?;
-                },
+                }
             }
         }
 
         Ok(())
     }
 
-    fn write<W: WriteRoseExt>(&mut self, writer: &mut W) -> Result<(), Error> {
+    fn write<W: WriteRoseExt>(&mut self, _writer: &mut W) -> Result<(), Error> {
         unimplemented!();
     }
 }

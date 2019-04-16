@@ -1,8 +1,7 @@
 //! ROSE Online Terrain Tilemap
-use std::iter;
 use failure::Error;
-use io::{RoseFile, ReadRoseExt, WriteRoseExt};
-
+use io::{ReadRoseExt, RoseFile, WriteRoseExt};
+use std::iter;
 
 /// Tile file
 pub type TIL = Tilemap;
@@ -36,21 +35,23 @@ impl Tile {
 }
 
 impl RoseFile for Tilemap {
-   fn new() -> Tilemap {
-        Tilemap { 
+    fn new() -> Tilemap {
+        Tilemap {
             width: 0,
             height: 0,
-            tiles: Vec::new() 
+            tiles: Vec::new(),
         }
     }
 
-   fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
+    fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
         self.width = reader.read_i32()?;
         self.height = reader.read_i32()?;
 
         self.tiles.resize(
             self.width as usize,
-            iter::repeat(Tile::new()).take(self.width as usize).collect()
+            iter::repeat(Tile::new())
+                .take(self.width as usize)
+                .collect(),
         );
 
         for h in 0..self.height {
@@ -65,10 +66,10 @@ impl RoseFile for Tilemap {
             }
         }
 
-       Ok(())
-   }
+        Ok(())
+    }
 
-   fn write<W: WriteRoseExt>(&mut self, writer: &mut W) -> Result<(), Error> {
-       unimplemented!();
-   }
+    fn write<W: WriteRoseExt>(&mut self, _writer: &mut W) -> Result<(), Error> {
+        unimplemented!();
+    }
 }

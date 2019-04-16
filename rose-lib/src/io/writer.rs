@@ -1,6 +1,6 @@
-use std::io::{Write, Seek};
-use byteorder::{WriteBytesExt, LittleEndian};
+use byteorder::{LittleEndian, WriteBytesExt};
 use failure::Error;
+use std::io::{Seek, Write};
 use utils::{Color4, Vector2, Vector3, Vector4};
 
 /// Extends `BufWriter` with methods for writing ROSE data types
@@ -35,6 +35,9 @@ pub trait WriteRoseExt: Write + Seek {
     fn write_f32(&mut self, n: f32) -> Result<(), Error>;
     fn write_f64(&mut self, n: f64) -> Result<(), Error>;
 
+    // Write a fix-sized string
+    fn write_string(&mut self, string: &str, len: i32) -> Result<(), Error>;
+
     // Write string as null terminated string
     fn write_cstring(&mut self, string: &str) -> Result<(), Error>;
 
@@ -57,9 +60,10 @@ pub trait WriteRoseExt: Write + Seek {
 }
 
 impl<W> WriteRoseExt for W
-    where W: Write,
-          W: Seek,
-          W: WriteBytesExt
+where
+    W: Write,
+    W: Seek,
+    W: WriteBytesExt,
 {
     fn write_u8(&mut self, n: u8) -> Result<(), Error> {
         WriteBytesExt::write_u8(self, n)?;
@@ -104,6 +108,13 @@ impl<W> WriteRoseExt for W
 
     fn write_f64(&mut self, n: f64) -> Result<(), Error> {
         WriteBytesExt::write_f64::<LittleEndian>(self, n)?;
+        Ok(())
+    }
+
+    fn write_string(&mut self, string: &str, len: i32) -> Result<(), Error> {
+        for i in 0..len {
+            WriteRoseExt::write_u8(self, string.as_bytes()[i as usize])?;
+        }
         Ok(())
     }
 

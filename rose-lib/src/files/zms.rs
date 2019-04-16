@@ -1,14 +1,13 @@
 //! ROSE Online 3D Meshes
 use failure::Error;
-use io::{RoseFile, ReadRoseExt, WriteRoseExt};
+use io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use utils::{BoundingBox, Color4, Vector2, Vector3, Vector4};
-
 
 /// Mesh File
 pub type ZMS = Mesh;
 
-/// Mesh 
-#[derive(Debug, Serialize, Deserialize, PartialEq)] 
+/// Mesh
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Mesh {
     pub identifier: String,
     pub format: i32,
@@ -68,8 +67,8 @@ impl Mesh {
     }
 
     pub fn bones_enabled(&self) -> bool {
-        ((VertexFormat::BoneWeight as i32 & self.format) != 0) &&
-        ((VertexFormat::BoneIndex as i32 & self.format) != 0)
+        ((VertexFormat::BoneWeight as i32 & self.format) != 0)
+            && ((VertexFormat::BoneIndex as i32 & self.format) != 0)
     }
 
     pub fn tangents_enabled(&self) -> bool {
@@ -92,7 +91,6 @@ impl Mesh {
         (VertexFormat::UV4 as i32 & self.format) != 0
     }
 }
-
 
 impl RoseFile for Mesh {
     fn new() -> Mesh {
@@ -157,7 +155,6 @@ impl RoseFile for Mesh {
             for i in 0..vert_count as usize {
                 self.vertices[i].bone_weights = reader.read_vector4_f32()?;
                 self.vertices[i].bone_indices = reader.read_vector4_i16()?;
-
             }
         }
 
@@ -318,4 +315,3 @@ impl Vertex {
         }
     }
 }
-
