@@ -1,10 +1,14 @@
-#[macro_use] extern crate clap;
-#[macro_use] extern crate failure;
-#[macro_use] extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
+extern crate csv;
+#[macro_use]
+extern crate clap;
+#[macro_use]
+extern crate failure;
+#[macro_use]
+extern crate serde_derive;
 extern crate image;
 extern crate roselib;
+extern crate serde;
+extern crate serde_json;
 
 use std::f32;
 use std::fs;
@@ -17,10 +21,9 @@ use clap::ArgMatches;
 use failure::Error;
 use image::{GrayImage, ImageBuffer};
 
-use roselib::files::*;
 use roselib::files::zon::ZoneTileRotation;
+use roselib::files::*;
 use roselib::io::RoseFile;
-
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TilemapTile {
@@ -43,15 +46,18 @@ fn main() {
     // Setup output directory
     let out_dir = Path::new(matches.value_of("out_dir").unwrap());
     if let Err(e) = fs::create_dir_all(&out_dir) {
-        eprintln!("Error creating output directory {}: {}",
-                  out_dir.to_str().unwrap_or(""),
-                  e);
+        eprintln!(
+            "Error creating output directory {}: {}",
+            out_dir.to_str().unwrap_or(""),
+            e
+        );
         exit(1);
     }
 
     // Run subcommands
     let res = match matches.subcommand() {
         ("map", Some(matches)) => convert_map(matches),
+        ("csv", Some(matches)) => convert_csv(matches),
         _ => {
             eprintln!("ROSE Online Converter. Run with `--help` for more info.");
             exit(1);
@@ -157,7 +163,7 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
     let mut heights: Vec<Vec<f32>> = Vec::new();
     heights.resize(
         new_map_height as usize,
-        iter::repeat(0.0).take(new_map_width as usize).collect()
+        iter::repeat(0.0).take(new_map_width as usize).collect(),
     );
 
     // Number of tiles in x and y direction
@@ -167,21 +173,23 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
     let mut tiles: Vec<Vec<i32>> = Vec::new();
     tiles.resize(
         tiles_y as usize,
-        iter::repeat(0).take(tiles_x as usize).collect()
+        iter::repeat(0).take(tiles_x as usize).collect(),
     );
 
-    for y in y_min..y_max+1 {
-        for x in x_min..x_max+1 {
+    for y in y_min..y_max + 1 {
+        for x in x_min..x_max + 1 {
             //-- Load HIMs
             let him_name = format!("{}_{}.HIM", x, y);
             let him_path = map_dir.join(&him_name);
 
             let him = HIM::from_path(&him_path).unwrap();
             if him.height != 65 || him.width != 65 {
-                bail!("Unexpected HIM dimensions. Expected 65x65: {} ({}x{})",
-                      &him_path.to_str().unwrap_or(&him_name),
-                      him.width,
-                      him.height);
+                bail!(
+                    "Unexpected HIM dimensions. Expected 65x65: {} ({}x{})",
+                    &him_path.to_str().unwrap_or(&him_name),
+                    him.width,
+                    him.height
+                );
             }
 
             for h in 0..him.height {
@@ -208,12 +216,13 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
 
             let til = TIL::from_path(&til_path).unwrap();
             if til.height != 16 || til.width != 16 {
-                bail!("Unexpected TIL dimensions. Expected 16x16: {} ({}x{})",
+                bail!(
+                    "Unexpected TIL dimensions. Expected 16x16: {} ({}x{})",
                     &til_path.to_str().unwrap_or(&til_name),
                     til.width,
-                    til.height);
+                    til.height
+                );
             }
-
 
             for h in 0..til.height {
                 for w in 0..til.width {
@@ -237,18 +246,13 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
     // -- Heightmap image
     let delta_height = max_height - min_height;
 
-    let mut height_image: GrayImage = ImageBuffer::new(
-        new_map_width,
-        new_map_height,
-    );
+    let mut height_image: GrayImage = ImageBuffer::new(new_map_width, new_map_height);
 
     for y in 0..new_map_height {
         for x in 0..new_map_width {
             let height = heights[y as usize][x as usize];
 
-            let norm_height = |h| {
-               (255.0 * ((h - min_height) / delta_height)) as u8
-            };
+            let norm_height = |h| (255.0 * ((h - min_height) / delta_height)) as u8;
 
             let pixel = image::Luma([norm_height(height)]);
             height_image.put_pixel(x, y, pixel);
@@ -298,6 +302,38 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
     serde_json::to_writer_pretty(f, &tilemap)?;
 
     // EXPORT IFO data as JSON
+
+    Ok(())
+}
+
+fn convert_csv(matches: &ArgMatches) -> Result<(), Error> {
+    let file_path = Path::new(matches.value_of("file").unwrap());
+
+    if !file_path.is_file() {
+        bail!("Path is not a file: {:?}", file_path);
+    }
+
+    let ext = file_path
+        .extension()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_lowercase();
+
+    if ext == "stb" {
+        let stb = STB::from_path(file_path)?;
+
+        let mut out = PathBuf::from(matches.value_of("out_dir").unwrap_or("out"));
+        out.push(file_path.file_stem().unwrap());
+        out.set_extension("csv");
+
+        let mut writer = csv::Writer::from_path(out)?;
+        writer.write_record(&stb.headers)?;
+
+        for row in stb.data {
+            writer.write_record(&row)?;
+        }
+    }
 
     Ok(())
 }

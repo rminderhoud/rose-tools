@@ -17,3 +17,9 @@ subcommands:
             - map_dir:
                 help: Map directory containing zon, him, til and ifo files
                 required: true
+    - csv:
+        about: Convert STB/STL files to CSV
+        args:
+            - file:
+                help: STB or STL file
+                required: true
