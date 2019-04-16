@@ -307,31 +307,35 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
 }
 
 fn convert_csv(matches: &ArgMatches) -> Result<(), Error> {
-    let file_path = Path::new(matches.value_of("file").unwrap());
+    let file_paths = matches.values_of("file").unwrap();
 
-    if !file_path.is_file() {
-        bail!("Path is not a file: {:?}", file_path);
-    }
+    for file_path in file_paths {
+        let file_path = Path::new(file_path);
 
-    let ext = file_path
-        .extension()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .to_lowercase();
+        if !file_path.is_file() {
+            bail!("Path is not a file: {:?}", file_path);
+        }
 
-    if ext == "stb" {
-        let stb = STB::from_path(file_path)?;
+        let ext = file_path
+            .extension()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_lowercase();
 
-        let mut out = PathBuf::from(matches.value_of("out_dir").unwrap_or("out"));
-        out.push(file_path.file_stem().unwrap());
-        out.set_extension("csv");
+        if ext == "stb" {
+            let stb = STB::from_path(file_path)?;
 
-        let mut writer = csv::Writer::from_path(out)?;
-        writer.write_record(&stb.headers)?;
+            let mut out = PathBuf::from(matches.value_of("out_dir").unwrap_or("out"));
+            out.push(file_path.file_stem().unwrap());
+            out.set_extension("csv");
 
-        for row in stb.data {
-            writer.write_record(&row)?;
+            let mut writer = csv::Writer::from_path(out)?;
+            writer.write_record(&stb.headers)?;
+
+            for row in stb.data {
+                writer.write_record(&row)?;
+            }
         }
     }
 

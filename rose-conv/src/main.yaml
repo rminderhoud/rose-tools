@@ -21,5 +21,6 @@ subcommands:
         about: Convert STB/STL files to CSV
         args:
             - file:
-                help: STB or STL file
+                help: STB or STL files
                 required: true
+                multiple: true
