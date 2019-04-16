@@ -37,10 +37,15 @@ impl RoseFile for DataTable {
             let _col_width = reader.read_u16()?;
         }
 
-        let _root_col_name = reader.read_string_u16()?;
-        for _ in 0..col_count {
+        let root_col_name = reader.read_string_u16()?;
+        self.headers.push(root_col_name);
+
+        for _ in 0..col_count - 1 {
             self.headers.push(reader.read_string_u16()?);
         }
+
+        // Unknown string
+        let _ = reader.read_string_u16()?; 
 
         for _ in 0..row_count - 1 {
             let mut row: Vec<String> = Vec::new();
@@ -78,12 +83,13 @@ impl RoseFile for DataTable {
             writer.write_u16(0)?;
         }
 
-        // Root column name
-        writer.write_string_u16("")?;
         for header in &self.headers {
             // Column names
             writer.write_string_u16(&header)?;
         }
+
+        // Unknown string
+        writer.write_string_u16("")?;
 
         for row in &self.data {
             writer.write_string_u16(&row[0])?;
@@ -92,8 +98,8 @@ impl RoseFile for DataTable {
         let offset = writer.seek(SeekFrom::Current(0))?;
 
         for row in &self.data {
-            for cell in row {
-                writer.write_string_u16(&cell)?;
+            for i in 1..row.len() {
+                writer.write_string_u16(&row[i])?;
             }
         }
 

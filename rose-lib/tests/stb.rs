@@ -13,15 +13,16 @@ fn read_stb() {
     root.push("tests");
     root.push("data");
 
-    let file = root.join("list_quest.stb");
+    //let file = root.join("list_quest.stb");
+    let file = root.join("list_zone.stb");
     let stb = STB::from_path(&file).unwrap();
 
     assert_eq!(stb.identifier, "STB1");
-    assert_eq!(stb.headers.len(), 6);
-    assert_eq!(stb.data.len(), 5501);
+    assert_eq!(stb.headers.len(), 38);
+    assert_eq!(stb.data.len(), 121);
 
     for row in stb.data {
-        assert_eq!(row.len(), 6);
+        assert_eq!(row.len(), 38);
     }
 }
 
@@ -31,7 +32,7 @@ fn write_stb() {
     root.push("tests");
     root.push("data");
 
-    let stb_file = root.join("list_quest.stb");
+    let stb_file = root.join("list_zone.stb");
 
     let f = File::open(&stb_file).unwrap();
     let stb_size = f.metadata().unwrap().len();
@@ -52,4 +53,5 @@ fn write_stb() {
     assert_eq!(orig_stb.identifier, new_stb.identifier);
     assert_eq!(orig_stb.headers.len(), new_stb.headers.len());
     assert_eq!(orig_stb.data.len(), new_stb.data.len());
+    assert_eq!(orig_stb, new_stb);
 }

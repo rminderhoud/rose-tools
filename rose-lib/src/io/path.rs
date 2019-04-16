@@ -37,7 +37,7 @@ pub trait PathRoseExt {
     ///
     /// let path = PathBuf::from("FOO/BAR\\BAZ");
     /// let str = path.to_rose_path();
-    /// assert_eq!(path.to_str().unwrap(), str);
+    /// assert_eq!("FOO/BAR/BAZ", str);
     /// ```
     fn to_rose_path(&self) -> String;
 }
