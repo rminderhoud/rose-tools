@@ -133,7 +133,7 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
 
         if fpath.extension().unwrap().to_str().unwrap().to_lowercase() == "him" {
             let fname = fpath.file_stem().unwrap().to_str().unwrap();
-            let parts: Vec<&str> = fname.split("_").collect();
+            let parts: Vec<&str> = fname.split('_').collect();
             x_coords.push(parts[0].parse()?);
             y_coords.push(parts[1].parse()?);
         }
@@ -176,8 +176,8 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
         iter::repeat(0).take(tiles_x as usize).collect(),
     );
 
-    for y in y_min..y_max + 1 {
-        for x in x_min..x_max + 1 {
+    for y in y_min..=y_max {
+        for x in x_min..=x_max {
             //-- Load HIMs
             let him_name = format!("{}_{}.HIM", x, y);
             let him_path = map_dir.join(&him_name);
@@ -270,7 +270,7 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
     // Dump ZON as JSON
     let zon = ZON::from_path(&map_dir.join(format!("{}.ZON", map_name)))?;
     let mut zon_file = PathBuf::from(out_dir);
-    zon_file.push(format!("{}", map_name));
+    zon_file.push(map_name.to_string());
     zon_file.set_extension("json");
 
     println!("Dumping ZON file to: {}", &zon_file.to_str().unwrap());

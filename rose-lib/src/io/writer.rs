@@ -22,6 +22,10 @@ use utils::{Color4, Vector2, Vector3, Vector4};
 /// NOTE: Strings are encoded as UTF-8 and no UTF-8 strings are lossily encoded
 /// into UTF-8. The original ROSE files were encoded as EUC-KR, as such some
 /// data may be lost.
+///
+// Note: Clippy recommends passing by value for copy-able small args but
+// we ignore that optimization in favor of API consistency
+#[allow(clippy::trivially_copy_pass_by_ref)]
 pub trait WriteRoseExt: Write + Seek {
     fn write_u8(&mut self, n: u8) -> Result<(), Error>;
     fn write_u16(&mut self, n: u16) -> Result<(), Error>;
@@ -51,7 +55,6 @@ pub trait WriteRoseExt: Write + Seek {
     fn write_string_u32(&mut self, string: &str) -> Result<(), Error>;
 
     fn write_color4(&mut self, color: &Color4) -> Result<(), Error>;
-
     fn write_vector2_f32(&mut self, v: &Vector2<f32>) -> Result<(), Error>;
     fn write_vector3_f32(&mut self, v: &Vector3<f32>) -> Result<(), Error>;
     fn write_vector3_i16(&mut self, v: &Vector3<i16>) -> Result<(), Error>;
@@ -96,7 +99,7 @@ where
     }
 
     fn write_bool(&mut self, b: bool) -> Result<(), Error> {
-        let i = if b == true { 1u8 } else { 0u8 };
+        let i = if b { 1u8 } else { 0u8 };
         WriteRoseExt::write_u8(self, i)?;
         Ok(())
     }

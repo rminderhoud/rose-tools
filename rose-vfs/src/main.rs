@@ -2,13 +2,13 @@
 extern crate clap;
 extern crate roselib;
 
-use std::ffi::OsStr;
-use std::fs::{File, create_dir_all};
-use std::io::{Read, Write, Seek, SeekFrom};
-use std::path::{Path, PathBuf};
-use std::process::exit;
 use roselib::files::IDX;
 use roselib::io::RoseFile;
+use std::ffi::OsStr;
+use std::fs::{create_dir_all, File};
+use std::io::{Read, Seek, SeekFrom, Write};
+use std::path::{Path, PathBuf};
+use std::process::exit;
 
 fn main() {
     let yaml = load_yaml!("vfs_extractor.yaml");
@@ -26,7 +26,7 @@ fn main() {
 
     let include: Vec<String> = match matches.values_of("include") {
         Some(v) => v.map(|s| s.to_lowercase()).collect(),
-        None => Vec::new(), 
+        None => Vec::new(),
     };
 
     let idx_file = match File::open(&idx_path) {
@@ -54,25 +54,30 @@ fn main() {
         let mut vfs_path = PathBuf::from(idx_path_dir);
         vfs_path.push(&fs.filename);
 
-        let mut vfs = match File::open(vfs_path) { 
+        let mut vfs = match File::open(vfs_path) {
             Ok(f) => f,
             Err(e) => {
-                println!("Unable to open {}: {}",
-                         &fs.filename.to_str().unwrap_or(""),
-                         e);
+                println!(
+                    "Unable to open {}: {}",
+                    &fs.filename.to_str().unwrap_or(""),
+                    e
+                );
                 continue;
             }
         };
 
-        println!("Loaded {}: {} files indexed",
-                 fs.filename.to_str().unwrap_or(""),
-                 fs.files.len());
+        println!(
+            "Loaded {}: {} files indexed",
+            fs.filename.to_str().unwrap_or(""),
+            fs.files.len()
+        );
 
         let mut extracted = 0;
         for file in fs.files {
-            let file_ext = file.filepath
+            let file_ext = file
+                .filepath
                 .extension()
-                .unwrap_or(OsStr::new(""))
+                .unwrap_or_else(|| OsStr::new(""))
                 .to_str()
                 .unwrap_or("");
             if include.is_empty() | include.contains(&file_ext.to_lowercase()) {
@@ -88,22 +93,22 @@ fn main() {
                 }
 
                 let out_file_parent = out_file_path.parent().unwrap();
-                if !out_file_parent.exists() {
-                    if !dry_run {
-                        if let Err(e) = create_dir_all(out_file_parent) {
-                            println!("Error creating output directory: {}", e);
-                            continue;
-                        };
-                    }
+                if !out_file_parent.exists() && !dry_run {
+                    if let Err(e) = create_dir_all(out_file_parent) {
+                        println!("Error creating output directory: {}", e);
+                        continue;
+                    };
                 }
 
                 if !dry_run {
                     let mut out_file = match File::create(&out_file_path) {
                         Ok(f) => f,
                         Err(e) => {
-                            println!("Unable to write file {}: {}",
-                                     out_file_path.to_str().unwrap(),
-                                     e);
+                            println!(
+                                "Unable to write file {}: {}",
+                                out_file_path.to_str().unwrap(),
+                                e
+                            );
                             continue;
                         }
                     };
@@ -111,30 +116,35 @@ fn main() {
                     let mut buffer: Vec<u8> = Vec::new();
                     buffer.resize(file.size as usize, 0u8);
                     if let Err(e) = vfs.seek(SeekFrom::Start(file.offset as u64)) {
-                        println!("Error reading data from {}: {}",
-                                 fs.filename.to_str().unwrap(),
-                                 e);
+                        println!(
+                            "Error reading data from {}: {}",
+                            fs.filename.to_str().unwrap(),
+                            e
+                        );
                         continue;
                     }
 
                     if let Err(e) = vfs.read_exact(&mut buffer) {
-                        println!("Error reading data from {}: {}",
-                                 fs.filename.to_str().unwrap(),
-                                 e);
+                        println!(
+                            "Error reading data from {}: {}",
+                            fs.filename.to_str().unwrap(),
+                            e
+                        );
                         continue;
                     }
 
                     if let Err(e) = out_file.write_all(&buffer) {
-                        println!("Error writing file {}: {}",
-                                 out_file_path.file_name().unwrap().to_str().unwrap(),
-                                 e);
+                        println!(
+                            "Error writing file {}: {}",
+                            out_file_path.file_name().unwrap().to_str().unwrap(),
+                            e
+                        );
 
                         continue;
                     }
-
                 }
 
-                extracted = extracted + 1;
+                extracted += 1;
             }
         }
         println!("{} files extracted", extracted);

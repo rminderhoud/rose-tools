@@ -181,56 +181,57 @@ impl RoseFile for Mesh {
         writer.write_i16(self.vertices.len() as i16)?;
 
         if self.positions_enabled() {
-            for ref vertex in &self.vertices {
+            //for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector3_f32(&vertex.position)?;
             }
         }
 
         if self.normals_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector3_f32(&vertex.normal)?;
             }
         }
 
         if self.colors_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_color4(&vertex.color)?;
             }
         }
 
         if self.bones_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector4_f32(&vertex.bone_weights)?;
                 writer.write_vector4_i16(&vertex.bone_indices)?;
             }
         }
 
         if self.tangents_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector3_f32(&vertex.tangent)?;
             }
         }
 
         if self.uv1_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector2_f32(&vertex.uv1)?;
             }
         }
 
         if self.uv2_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector2_f32(&vertex.uv2)?;
             }
         }
 
         if self.uv3_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector2_f32(&vertex.uv3)?;
             }
         }
 
         if self.uv4_enabled() {
-            for ref vertex in &self.vertices {
+            for vertex in &self.vertices {
                 writer.write_vector2_f32(&vertex.uv4)?;
             }
         }

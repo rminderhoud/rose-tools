@@ -111,9 +111,7 @@ impl RoseFile for VfsIndex {
             writer.write_i32(0)?; // Reserve to be written later
         }
 
-        for i in 0..self.file_systems.len() {
-            let ref vfs = self.file_systems[i];
-
+        for (i, vfs) in self.file_systems.iter().enumerate() {
             let file_offset = writer.seek(SeekFrom::Current(0))?;
 
             // Add data offset to header section
@@ -124,7 +122,7 @@ impl RoseFile for VfsIndex {
             let mut deleted_count: i32 = 0;
             for file in &vfs.files {
                 if file.is_deleted {
-                    deleted_count = deleted_count + 1;
+                    deleted_count += 1;
                 }
             }
 

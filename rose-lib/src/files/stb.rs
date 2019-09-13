@@ -49,7 +49,7 @@ impl RoseFile for DataTable {
             self.data.push(row);
         }
 
-        reader.seek(SeekFrom::Start(offset as u64))?;
+        reader.seek(SeekFrom::Start(u64::from(offset)))?;
 
         for i in 0..row_count - 1 {
             for _ in 0..col_count - 1 {
@@ -94,8 +94,12 @@ impl RoseFile for DataTable {
         let offset = writer.seek(SeekFrom::Current(0))?;
 
         for row in &self.data {
+            /*
             for i in 1..row.len() {
                 writer.write_string_u16(&row[i])?;
+            }*/
+            for cell in row.iter().skip(1) {
+                writer.write_string_u16(cell)?;
             }
         }
 

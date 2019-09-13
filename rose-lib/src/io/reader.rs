@@ -1,6 +1,6 @@
 use std::io::{BufRead, Read, Seek};
 
-use byteorder::{ReadBytesExt, LittleEndian};
+use byteorder::{LittleEndian, ReadBytesExt};
 use failure::Error;
 
 use utils::{Color4, Vector2, Vector3, Vector4};
@@ -64,10 +64,11 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
 }
 
 impl<R> ReadRoseExt for R
-    where R: Read,
-          R: Seek,
-          R: BufRead,
-          R: ReadBytesExt
+where
+    R: Read,
+    R: Seek,
+    R: BufRead,
+    R: ReadBytesExt,
 {
     fn read_u8(&mut self) -> Result<u8, Error> {
         Ok(ReadBytesExt::read_u8(self)?)
@@ -131,17 +132,17 @@ impl<R> ReadRoseExt for R
 
     fn read_string_u8(&mut self) -> Result<String, Error> {
         let length = ReadRoseExt::read_u8(self)?;
-        self.read_string(length as u64)
+        self.read_string(u64::from(length))
     }
 
     fn read_string_u16(&mut self) -> Result<String, Error> {
         let length = ReadRoseExt::read_u16(self)?;
-        self.read_string(length as u64)
+        self.read_string(u64::from(length))
     }
 
     fn read_string_u32(&mut self) -> Result<String, Error> {
         let length = ReadRoseExt::read_u32(self)?;
-        self.read_string(length as u64)
+        self.read_string(u64::from(length))
     }
 
     fn read_color4(&mut self) -> Result<Color4, Error> {

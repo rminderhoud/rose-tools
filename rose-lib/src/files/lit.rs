@@ -57,11 +57,11 @@ impl RoseFile for Lightmap {
     fn write<W: WriteRoseExt>(&mut self, writer: &mut W) -> Result<(), Error> {
         writer.write_i32(self.objects.len() as i32)?;
 
-        for ref object in &self.objects {
+        for object in &self.objects {
             writer.write_i32(object.parts.len() as i32)?;
             writer.write_i32(object.id)?;
 
-            for ref part in &object.parts {
+            for part in &object.parts {
                 writer.write_string_u8(&part.name)?;
                 writer.write_i32(part.id)?;
                 writer.write_string_u8(&part.filename)?;
@@ -74,7 +74,7 @@ impl RoseFile for Lightmap {
 
         writer.write_i32(self.filenames.len() as i32)?;
 
-        for ref filename in &self.filenames {
+        for filename in &self.filenames {
             writer.write_string_u8(&filename)?;
         }
 
