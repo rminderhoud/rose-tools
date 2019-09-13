@@ -6,16 +6,7 @@ use std::iter;
 /// Tile file
 pub type TIL = Tilemap;
 
-/// Tile
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Tile {
-    pub brush_id: u8,
-    pub tile_idx: u8,
-    pub tile_set: u8,
-    pub tile_id: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Tilemap {
     pub width: i32,
     pub height: i32,
@@ -23,24 +14,9 @@ pub struct Tilemap {
     pub tiles: Vec<Vec<Tile>>,
 }
 
-impl Tile {
-    fn new() -> Tile {
-        Tile {
-            brush_id: 0,
-            tile_idx: 0,
-            tile_set: 0,
-            tile_id: 0,
-        }
-    }
-}
-
 impl RoseFile for Tilemap {
     fn new() -> Tilemap {
-        Tilemap {
-            width: 0,
-            height: 0,
-            tiles: Vec::new(),
-        }
+        Self::default()
     }
 
     fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
@@ -71,5 +47,20 @@ impl RoseFile for Tilemap {
 
     fn write<W: WriteRoseExt>(&mut self, _writer: &mut W) -> Result<(), Error> {
         unimplemented!();
+    }
+}
+
+/// Tile
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Tile {
+    pub brush_id: u8,
+    pub tile_idx: u8,
+    pub tile_set: u8,
+    pub tile_id: i32,
+}
+
+impl Tile {
+    fn new() -> Tile {
+        Self::default()
     }
 }

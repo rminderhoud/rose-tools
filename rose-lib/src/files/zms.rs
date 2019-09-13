@@ -23,36 +23,6 @@ pub struct Mesh {
     pub pool: i16,
 }
 
-/// Mesh Vertex
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub struct Vertex {
-    pub position: Vector3<f32>,
-    pub normal: Vector3<f32>,
-    pub color: Color4,
-    pub bone_weights: Vector4<f32>,
-    pub bone_indices: Vector4<i16>,
-    pub tangent: Vector3<f32>,
-    pub uv1: Vector2<f32>,
-    pub uv2: Vector2<f32>,
-    pub uv3: Vector2<f32>,
-    pub uv4: Vector2<f32>,
-}
-
-/// Mesh Vertex Flags
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub enum VertexFormat {
-    Position = 1 << 1,
-    Normal = 1 << 2,
-    Color = 1 << 3,
-    BoneWeight = 1 << 4,
-    BoneIndex = 1 << 5,
-    Tangent = 1 << 6,
-    UV1 = 1 << 7,
-    UV2 = 1 << 8,
-    UV3 = 1 << 9,
-    UV4 = 1 << 10,
-}
-
 impl Mesh {
     pub fn positions_enabled(&self) -> bool {
         (VertexFormat::Position as i32 & self.format) != 0
@@ -94,20 +64,7 @@ impl Mesh {
 
 impl RoseFile for Mesh {
     fn new() -> Mesh {
-        Mesh {
-            identifier: String::from(""),
-            format: -1,
-            bounding_box: BoundingBox {
-                min: Vector3::<f32>::new(),
-                max: Vector3::<f32>::new(),
-            },
-            bones: Vec::new(),
-            vertices: Vec::new(),
-            indices: Vec::new(),
-            materials: Vec::new(),
-            strips: Vec::new(),
-            pool: 0,
-        }
+        Self::default()
     }
 
     fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
@@ -299,19 +256,57 @@ impl RoseFile for Mesh {
     }
 }
 
-impl Vertex {
-    pub fn new() -> Vertex {
-        Vertex {
-            position: Vector3::<f32>::new(),
-            normal: Vector3::<f32>::new(),
-            color: Color4::new(),
-            bone_weights: Vector4::<f32>::new(),
-            bone_indices: Vector4::<i16>::new(),
-            tangent: Vector3::<f32>::new(),
-            uv1: Vector2::<f32>::new(),
-            uv2: Vector2::<f32>::new(),
-            uv3: Vector2::<f32>::new(),
-            uv4: Vector2::<f32>::new(),
+impl Default for Mesh {
+    fn default() -> Mesh {
+        Mesh {
+            identifier: String::from(""),
+            format: -1,
+            bounding_box: BoundingBox {
+                min: Vector3::<f32>::new(),
+                max: Vector3::<f32>::new(),
+            },
+            bones: Vec::new(),
+            vertices: Vec::new(),
+            indices: Vec::new(),
+            materials: Vec::new(),
+            strips: Vec::new(),
+            pool: 0,
         }
     }
+}
+
+/// Mesh Vertex
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+pub struct Vertex {
+    pub position: Vector3<f32>,
+    pub normal: Vector3<f32>,
+    pub color: Color4,
+    pub bone_weights: Vector4<f32>,
+    pub bone_indices: Vector4<i16>,
+    pub tangent: Vector3<f32>,
+    pub uv1: Vector2<f32>,
+    pub uv2: Vector2<f32>,
+    pub uv3: Vector2<f32>,
+    pub uv4: Vector2<f32>,
+}
+
+impl Vertex {
+    pub fn new() -> Vertex {
+        Self::default()
+    }
+}
+
+/// Mesh Vertex Flags
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub enum VertexFormat {
+    Position = 1 << 1,
+    Normal = 1 << 2,
+    Color = 1 << 3,
+    BoneWeight = 1 << 4,
+    BoneIndex = 1 << 5,
+    Tangent = 1 << 6,
+    UV1 = 1 << 7,
+    UV2 = 1 << 8,
+    UV3 = 1 << 9,
+    UV4 = 1 << 10,
 }

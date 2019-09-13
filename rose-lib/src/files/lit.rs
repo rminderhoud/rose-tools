@@ -4,40 +4,20 @@
 //! for blending with terrain/object textures.
 //!
 use failure::Error;
-use io::{RoseFile, ReadRoseExt, WriteRoseExt};
+use io::{ReadRoseExt, RoseFile, WriteRoseExt};
 
 /// Lightmap file
 pub type LIT = Lightmap;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Lightmap {
     pub objects: Vec<LightmapObject>,
     pub filenames: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct LightmapObject {
-    pub id: i32,
-    pub parts: Vec<LightmapPart>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct LightmapPart {
-    pub name: String,
-    pub id: i32,
-    pub filename: String,
-    pub lightmap_index: i32,
-    pub pixels_per_part: i32,
-    pub parts_per_width: i32,
-    pub part_position: i32,
-}
-
 impl RoseFile for Lightmap {
     fn new() -> Lightmap {
-        Lightmap {
-            objects: Vec::new(),
-            filenames: Vec::new(),
-        }
+        Self::default()
     }
 
     fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
@@ -102,8 +82,20 @@ impl RoseFile for Lightmap {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LightmapObject {
+    pub id: i32,
+    pub parts: Vec<LightmapPart>,
+}
+
 impl LightmapObject {
     pub fn new() -> LightmapObject {
+        Self::default()
+    }
+}
+
+impl Default for LightmapObject {
+    fn default() -> LightmapObject {
         LightmapObject {
             id: -1,
             parts: Vec::new(),
@@ -111,8 +103,25 @@ impl LightmapObject {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LightmapPart {
+    pub name: String,
+    pub id: i32,
+    pub filename: String,
+    pub lightmap_index: i32,
+    pub pixels_per_part: i32,
+    pub parts_per_width: i32,
+    pub part_position: i32,
+}
+
 impl LightmapPart {
     pub fn new() -> LightmapPart {
+        Self::default()
+    }
+}
+
+impl Default for LightmapPart {
+    fn default() -> LightmapPart {
         LightmapPart {
             name: String::new(),
             id: -1,

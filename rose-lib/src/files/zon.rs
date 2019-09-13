@@ -11,7 +11,7 @@ use utils::{Vector2, Vector3};
 pub type ZON = Zone;
 
 /// Zone
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Zone {
     pub zone_type: ZoneType,
     pub width: i32,
@@ -43,34 +43,7 @@ pub struct Zone {
 
 impl RoseFile for Zone {
     fn new() -> Zone {
-        Zone {
-            zone_type: ZoneType::Grass,
-            width: 0,
-            height: 0,
-            grid_count: 0,
-            grid_size: 0.0,
-            start_position: Vector2::<i32>::new(),
-            positions: Vec::new(),
-            event_points: Vec::new(),
-            textures: Vec::new(),
-            tiles: Vec::new(),
-            name: String::new(),
-            is_underground: false,
-            background_music: String::new(),
-            sky: String::new(),
-            economy_tick_rate: 0,
-            population_base: 0,
-            population_growth_rate: 0,
-            metal_consumption: 0,
-            stone_consumption: 0,
-            wood_consumption: 0,
-            leather_consumption: 0,
-            cloth_consumption: 0,
-            alchemy_consumption: 0,
-            chemical_consumption: 0,
-            medicine_consumption: 0,
-            food_consumption: 0,
-        }
+        Self::default()
     }
 
     fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
@@ -193,6 +166,12 @@ pub enum ZoneType {
     JunonPyramids = 14,
 }
 
+impl Default for ZoneType {
+    fn default() -> ZoneType {
+        ZoneType::Grass
+    }
+}
+
 impl TryFrom<i32> for ZoneType {
     type Error = failure::Error;
 
@@ -248,7 +227,7 @@ impl TryFrom<i32> for ZoneBlockType {
 }
 
 /// Zone Position
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
 pub struct ZonePosition {
     pub position: Vector2<f32>,
     pub is_used: bool,
@@ -256,15 +235,12 @@ pub struct ZonePosition {
 
 impl ZonePosition {
     fn new() -> ZonePosition {
-        ZonePosition {
-            position: Vector2::<f32>::new(),
-            is_used: false,
-        }
+        Self::default()
     }
 }
 
 /// Zone Event Position
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ZoneEventPoint {
     pub position: Vector3<f32>,
     pub name: String,
@@ -272,10 +248,7 @@ pub struct ZoneEventPoint {
 
 impl ZoneEventPoint {
     fn new() -> ZoneEventPoint {
-        ZoneEventPoint {
-            position: Vector3::<f32>::new(),
-            name: String::new(),
-        }
+        Self::default()
     }
 }
 
@@ -293,6 +266,12 @@ pub struct ZoneTile {
 
 impl ZoneTile {
     fn new() -> ZoneTile {
+        Self::default()
+    }
+}
+
+impl Default for ZoneTile {
+    fn default() -> ZoneTile {
         ZoneTile {
             layer1: -1,
             layer2: -1,
@@ -304,7 +283,6 @@ impl ZoneTile {
         }
     }
 }
-
 /// Zone Tile Rotation
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ZoneTileRotation {
@@ -315,6 +293,12 @@ pub enum ZoneTileRotation {
     Flip = 4,
     Clockwise90 = 5,
     CounterClockwise90 = 6,
+}
+
+impl Default for ZoneTileRotation {
+    fn default() -> ZoneTileRotation {
+        ZoneTileRotation::Unknown
+    }
 }
 
 impl TryFrom<i32> for ZoneTileRotation {

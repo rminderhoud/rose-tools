@@ -22,16 +22,7 @@ pub struct Heightmap {
 
 impl RoseFile for Heightmap {
     fn new() -> Heightmap {
-        Heightmap {
-            width: 0,
-            height: 0,
-            grid_count: 0,
-            scale: 0.0,
-            heights: Vec::new(),
-
-            min_height: f32::NAN,
-            max_height: f32::NAN,
-        }
+        Self::default()
     }
 
     fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
@@ -65,5 +56,20 @@ impl RoseFile for Heightmap {
     fn write<W: WriteRoseExt>(&mut self, _writer: &mut W) -> Result<(), Error> {
         // TODO: Implement writer
         unimplemented!();
+    }
+}
+
+impl Default for Heightmap {
+    fn default() -> Heightmap {
+        Heightmap {
+            width: 0,
+            height: 0,
+            grid_count: 0,
+            scale: 0.0,
+            heights: Vec::new(),
+
+            min_height: f32::NAN,
+            max_height: f32::NAN,
+        }
     }
 }

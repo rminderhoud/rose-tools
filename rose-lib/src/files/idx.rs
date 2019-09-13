@@ -31,7 +31,7 @@ use std::io::SeekFrom;
 use std::path::PathBuf;
 
 use failure::Error;
-use io::{RoseFile, ReadRoseExt, WriteRoseExt, PathRoseExt};
+use io::{PathRoseExt, ReadRoseExt, RoseFile, WriteRoseExt};
 
 /// Virtual file system index file
 pub type IDX = VfsIndex;
@@ -42,73 +42,16 @@ pub type IDX = VfsIndex;
 /// The index does not contain any actual asset data, only meta data about
 /// the file systems. Each file system in the index usually maps to a single
 /// `.vfs` file on disk.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct VfsIndex {
     pub base_version: i32,
     pub current_version: i32,
     pub file_systems: Vec<VfsMetadata>,
 }
 
-/// Virtual file system
-///
-/// Contains the metadata for a single file system.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct VfsMetadata {
-    pub filename: PathBuf,
-    pub files: Vec<VfsFileMetadata>,
-}
-
-
-/// Virtual file system file entry
-///
-/// Contains the metadata for a single file in the file system
-#[derive(Debug, Serialize, Deserialize)]
-pub struct VfsFileMetadata {
-    pub filepath: PathBuf,
-    pub offset: i32,
-    pub size: i32,
-    pub block_size: i32,
-    pub is_deleted: bool,
-    pub is_compressed: bool,
-    pub is_encrypted: bool,
-    pub version: i32,
-    pub checksum: i32,
-}
-
-impl VfsMetadata {
-    /// Construct an empty virtual file system
-    pub fn new() -> VfsMetadata {
-        VfsMetadata {
-            filename: PathBuf::new(),
-            files: Vec::new(),
-        }
-    }
-}
-
-impl VfsFileMetadata {
-    /// Construct an empty virtual file system file
-    pub fn new() -> VfsFileMetadata {
-        VfsFileMetadata {
-            filepath: PathBuf::new(),
-            offset: 0,
-            size: 0,
-            block_size: 0,
-            is_deleted: false,
-            is_compressed: false,
-            is_encrypted: false,
-            version: 0,
-            checksum: 0,
-        }
-    }
-}
-
 impl RoseFile for VfsIndex {
     fn new() -> VfsIndex {
-        VfsIndex {
-            base_version: 0,
-            current_version: 0,
-            file_systems: Vec::new(),
-        }
+        Self::default()
     }
 
     /// Load a `VfsIndex` from a reader
@@ -206,4 +149,41 @@ impl RoseFile for VfsIndex {
     }
 }
 
+/// Virtual file system
+///
+/// Contains the metadata for a single file system.
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct VfsMetadata {
+    pub filename: PathBuf,
+    pub files: Vec<VfsFileMetadata>,
+}
 
+impl VfsMetadata {
+    /// Construct an empty virtual file system
+    pub fn new() -> VfsMetadata {
+        Self::default()
+    }
+}
+
+/// Virtual file system file entry
+///
+/// Contains the metadata for a single file in the file system
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct VfsFileMetadata {
+    pub filepath: PathBuf,
+    pub offset: i32,
+    pub size: i32,
+    pub block_size: i32,
+    pub is_deleted: bool,
+    pub is_compressed: bool,
+    pub is_encrypted: bool,
+    pub version: i32,
+    pub checksum: i32,
+}
+
+impl VfsFileMetadata {
+    /// Construct an empty virtual file system file
+    pub fn new() -> VfsFileMetadata {
+        Self::default()
+    }
+}

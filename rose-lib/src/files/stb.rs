@@ -7,7 +7,7 @@ use std::io::SeekFrom;
 pub type STB = DataTable;
 
 /// Data Table
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct DataTable {
     pub identifier: String,
     pub headers: Vec<String>,
@@ -16,11 +16,7 @@ pub struct DataTable {
 
 impl RoseFile for DataTable {
     fn new() -> DataTable {
-        DataTable {
-            identifier: String::from(""),
-            headers: Vec::new(),
-            data: Vec::new(),
-        }
+        Self::default()
     }
 
     fn read<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
@@ -45,7 +41,7 @@ impl RoseFile for DataTable {
         }
 
         // Unknown string
-        let _ = reader.read_string_u16()?; 
+        let _ = reader.read_string_u16()?;
 
         for _ in 0..row_count - 1 {
             let mut row: Vec<String> = Vec::new();
