@@ -1,17 +1,17 @@
 //! ROSE Online Zone
+use std::convert::TryFrom;
 use std::io::SeekFrom;
 use std::iter;
 
 use failure::Error;
 use io::{ReadRoseExt, RoseFile, WriteRoseExt};
-use num::FromPrimitive as num_from;
 use utils::{Vector2, Vector3};
 
 /// Zone File
 pub type ZON = Zone;
 
 /// Zone Type
-#[derive(Debug, Serialize, Deserialize, FromPrimitive, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ZoneType {
     Grass = 0,
     Mountain = 1,
@@ -30,7 +30,35 @@ pub enum ZoneType {
     JunonPyramids = 14,
 }
 
-#[derive(Debug, Serialize, Deserialize, FromPrimitive, PartialEq)]
+impl TryFrom<i32> for ZoneType {
+    type Error = failure::Error;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(ZoneType::Grass),
+            1 => Ok(ZoneType::Mountain),
+            2 => Ok(ZoneType::MountainVillage),
+            3 => Ok(ZoneType::BoatVillage),
+            4 => Ok(ZoneType::Login),
+            5 => Ok(ZoneType::MountainGorge),
+            6 => Ok(ZoneType::Beach),
+            7 => Ok(ZoneType::JunonDungeon),
+            8 => Ok(ZoneType::LunaSnow),
+            9 => Ok(ZoneType::Birth),
+            10 => Ok(ZoneType::JunonField),
+            11 => Ok(ZoneType::LunaDungeon),
+            12 => Ok(ZoneType::EldeonField),
+            13 => Ok(ZoneType::EldeonField2),
+            14 => Ok(ZoneType::JunonPyramids),
+            _ => {
+                bail!("Invalid ZoneType: {}", value);
+            }
+        }
+    }
+}
+
+/// Zone Block Type
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ZoneBlockType {
     BasicInfo = 0,
     EventPoints = 1,
@@ -39,9 +67,27 @@ pub enum ZoneBlockType {
     Economy = 4,
 }
 
-#[derive(Debug, Serialize, Deserialize, FromPrimitive, PartialEq)]
+impl TryFrom<i32> for ZoneBlockType {
+    type Error = failure::Error;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(ZoneBlockType::BasicInfo),
+            1 => Ok(ZoneBlockType::EventPoints),
+            2 => Ok(ZoneBlockType::Textures),
+            3 => Ok(ZoneBlockType::Tiles),
+            4 => Ok(ZoneBlockType::Economy),
+            _ => {
+                bail!("Invalid ZoneBlockType: {}", value);
+            }
+        }
+    }
+}
+
+/// Zone Tile Rotation
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ZoneTileRotation {
-    Unkown = 0,
+    Unknown = 0,
     None = 1,
     FlipHorizontal = 2,
     FlipVertical = 3,
@@ -50,18 +96,40 @@ pub enum ZoneTileRotation {
     CounterClockwise90 = 6,
 }
 
+impl TryFrom<i32> for ZoneTileRotation {
+    type Error = failure::Error;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(ZoneTileRotation::Unknown),
+            1 => Ok(ZoneTileRotation::None),
+            2 => Ok(ZoneTileRotation::FlipHorizontal),
+            3 => Ok(ZoneTileRotation::FlipVertical),
+            4 => Ok(ZoneTileRotation::Flip),
+            5 => Ok(ZoneTileRotation::Clockwise90),
+            6 => Ok(ZoneTileRotation::CounterClockwise90),
+            _ => {
+                bail!("Invalid ZoneTileRotation: {}", value);
+            }
+        }
+    }
+}
+
+/// Zone Position
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct ZonePosition {
     pub position: Vector2<f32>,
     pub is_used: bool,
 }
 
+/// Zone Event Position
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ZoneEventPoint {
     pub position: Vector3<f32>,
     pub name: String,
 }
 
+/// ZoneTile
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ZoneTile {
     pub layer1: i32,
@@ -179,18 +247,14 @@ impl RoseFile for Zone {
         }
 
         for block in blocks {
-            let block_type = num_from::from_i32(block.0);
+            let block_type = ZoneBlockType::try_from(block.0)?;
             let block_offset = block.1;
-
-            if block_type.is_none() {
-                bail!("Invalid block type: {}", block.0);
-            }
 
             reader.seek(SeekFrom::Start(block_offset as u64))?;
 
-            match block_type.unwrap() {
+            match block_type {
                 ZoneBlockType::BasicInfo => {
-                    self.zone_type = num_from::from_i32(reader.read_i32()?).unwrap();
+                    self.zone_type = ZoneType::try_from(reader.read_i32()?)?;
                     self.width = reader.read_i32()?;
                     self.height = reader.read_i32()?;
                     self.grid_count = reader.read_i32()?;
@@ -237,7 +301,7 @@ impl RoseFile for Zone {
                         t.offset1 = reader.read_i32()?;
                         t.offset2 = reader.read_i32()?;
                         t.blend = reader.read_i32()? != 0;
-                        t.rotation = num_from::from_i32(reader.read_i32()?).unwrap();
+                        t.rotation = ZoneTileRotation::try_from(reader.read_i32()?)?;
                         t.tile_type = reader.read_i32()?;
                         self.tiles.push(t);
                     }
