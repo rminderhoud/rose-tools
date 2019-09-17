@@ -1,0 +1,16 @@
+[package]
+name = "roselib-ffi"
+version = "0.1.0"
+authors = ["Ralph Minderhoud <ralphminderhoud@gmail.com>"]
+homepage = "ralphminderhoud.com"
+edition = "2018"
+
+[lib]
+crate-type = ["staticlib", "dylib"]
+
+[build-dependencies]
+cbindgen = "0.9"
+
+[dependencies]
+roselib = { path = "../rose-lib" }
+libc = "0.2"

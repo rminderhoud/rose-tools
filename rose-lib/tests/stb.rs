@@ -19,7 +19,8 @@ fn read_stb() {
 
     assert_eq!(stb.identifier, "STB1");
     assert_eq!(stb.headers.len(), 38);
-    assert_eq!(stb.data.len(), 121);
+    assert_eq!(stb.rows(), 121);
+    assert_eq!(stb.cols(), 38);
 
     for row in stb.data {
         assert_eq!(row.len(), 38);

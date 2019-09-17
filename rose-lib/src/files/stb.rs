@@ -14,6 +14,34 @@ pub struct DataTable {
     pub data: Vec<Vec<String>>,
 }
 
+impl DataTable {
+    pub fn rows(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn cols(&self) -> usize {
+        if self.rows() > 0 {
+            self.data[0].len()
+        } else {
+            0
+        }
+    }
+
+    pub fn header(&self, idx: usize) -> Option<&str> {
+        if idx < self.headers.len() {
+            return Some(&self.headers[idx]);
+        }
+        None
+    }
+
+    pub fn value(&self, row: usize, col: usize) -> Option<&str> {
+        if row < self.rows() && col < self.cols() {
+            return Some(&self.data[row][col]);
+        }
+        None
+    }
+}
+
 impl RoseFile for DataTable {
     fn new() -> DataTable {
         Self::default()
