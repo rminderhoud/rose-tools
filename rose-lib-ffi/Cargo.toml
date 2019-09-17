@@ -7,7 +7,6 @@ edition = "2018"
 
 [lib]
 crate-type = ["staticlib", "dylib"]
-name = "roselib"
 
 [build-dependencies]
 cbindgen = "0.9"
