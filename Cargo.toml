@@ -3,5 +3,6 @@ members = [
     "rose-lib",
     "rose-lib-ffi",
     "rose-conv",
+    "rose-info",
     "rose-vfs",
 ]

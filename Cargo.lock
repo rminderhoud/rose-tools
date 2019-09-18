@@ -514,6 +514,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rose-info"
+version = "0.1.0"
+dependencies = [
+ "roselib 0.4.0",
+]
+
+[[package]]
 name = "roseconv"
 version = "0.1.1"
 dependencies = [
