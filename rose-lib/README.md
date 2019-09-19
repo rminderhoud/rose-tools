@@ -1,4 +1,4 @@
-# ROSE Online Rust SDK
+# ROSE Online Rust Library (roselib)
 A Rust library for working with ROSE Online's file formats.
 
 
@@ -6,7 +6,8 @@ A Rust library for working with ROSE Online's file formats.
 This crate provides a Rust library that can be used in other projects. See
 the documentation for more information
 
-Add `roseon` as a dependency in your `Cargo.toml`
+## Usage
+Add `roselib` as a dependency in your `Cargo.toml`
 ```toml
 [dependencies]
 roselib="../path/to/rose-lib"
@@ -29,10 +30,14 @@ for vfs in idx.file_systems {
 ```
 
 ### Supported File formats
-* HIM - ROSE Heightmap [Partial]
+* HIM - ROSE Heightmap [Read-only]
 * IDX (VFS) - ROSE Virtual filesystem
 * LIT - ROSE Lightmap
+* STB - ROSE Data table
+* TIL - ROSE Map Tile [Read-only]
+* ZMD - ROSE Skeleton
 * ZMS - ROSE 3D Mesh
+* ZON - ROSE Zone data [Read-only]
 
 ## Compatibility
 * This code has only been tested against rose_129_129en and is not guaranteed 
