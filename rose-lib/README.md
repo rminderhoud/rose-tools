@@ -1,4 +1,4 @@
-# ROSE Online Rust Library (roselib)
+# ROSE Online Library (roselib)
 A Rust library for working with ROSE Online's file formats.
 
 
@@ -37,7 +37,7 @@ for vfs in idx.file_systems {
 * TIL - ROSE Map Tile [Read-only]
 * ZMD - ROSE Skeleton
 * ZMS - ROSE 3D Mesh
-* ZON - ROSE Zone data [Read-only]
+* ZON - ROSE Zone [Read-only]
 
 ## Compatibility
 * This code has only been tested against rose_129_129en and is not guaranteed 
