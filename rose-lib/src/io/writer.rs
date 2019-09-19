@@ -1,7 +1,7 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use failure::Error;
 use std::io::{Seek, Write};
-use utils::{Color4, Vector2, Vector3, Vector4};
+use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 
 /// Extends `BufWriter` with methods for writing ROSE data types
 ///
@@ -60,6 +60,9 @@ pub trait WriteRoseExt: Write + Seek {
     fn write_vector3_i16(&mut self, v: &Vector3<i16>) -> Result<(), Error>;
     fn write_vector4_f32(&mut self, v: &Vector4<f32>) -> Result<(), Error>;
     fn write_vector4_i16(&mut self, v: &Vector4<i16>) -> Result<(), Error>;
+
+    fn write_quaternion(&mut self, q: &Quaternion) -> Result<(), Error>;
+    fn write_quaternion_wxyz(&mut self, q: &Quaternion) -> Result<(), Error>;
 }
 
 impl<W> WriteRoseExt for W
@@ -186,6 +189,22 @@ where
         WriteRoseExt::write_i16(self, v.x)?;
         WriteRoseExt::write_i16(self, v.y)?;
         WriteRoseExt::write_i16(self, v.z)?;
+        Ok(())
+    }
+
+    fn write_quaternion(&mut self, q: &Quaternion) -> Result<(), Error> {
+        WriteRoseExt::write_f32(self, q.x)?;
+        WriteRoseExt::write_f32(self, q.y)?;
+        WriteRoseExt::write_f32(self, q.z)?;
+        WriteRoseExt::write_f32(self, q.w)?;
+        Ok(())
+    }
+
+    fn write_quaternion_wxyz(&mut self, q: &Quaternion) -> Result<(), Error> {
+        WriteRoseExt::write_f32(self, q.w)?;
+        WriteRoseExt::write_f32(self, q.x)?;
+        WriteRoseExt::write_f32(self, q.y)?;
+        WriteRoseExt::write_f32(self, q.z)?;
         Ok(())
     }
 }

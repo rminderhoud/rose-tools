@@ -3,7 +3,7 @@ use std::io::{BufRead, Read, Seek};
 use byteorder::{LittleEndian, ReadBytesExt};
 use failure::Error;
 
-use utils::{Color4, Vector2, Vector3, Vector4};
+use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 
 /// Extends `BufReader` with methods for reading ROSE data types
 ///
@@ -61,6 +61,9 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
     fn read_vector3_i16(&mut self) -> Result<Vector3<i16>, Error>;
     fn read_vector4_f32(&mut self) -> Result<Vector4<f32>, Error>;
     fn read_vector4_i16(&mut self) -> Result<Vector4<i16>, Error>;
+
+    fn read_quaternion(&mut self) -> Result<Quaternion, Error>;
+    fn read_quaternion_wxyz(&mut self) -> Result<Quaternion, Error>;
 }
 
 impl<R> ReadRoseExt for R
@@ -199,5 +202,23 @@ where
         v.y = ReadRoseExt::read_i16(self)?;
         v.z = ReadRoseExt::read_i16(self)?;
         Ok(v)
+    }
+
+    fn read_quaternion(&mut self) -> Result<Quaternion, Error> {
+        let mut q = Quaternion::new();
+        q.x = ReadRoseExt::read_f32(self)?;
+        q.y = ReadRoseExt::read_f32(self)?;
+        q.z = ReadRoseExt::read_f32(self)?;
+        q.w = ReadRoseExt::read_f32(self)?;
+        Ok(q)
+    }
+
+    fn read_quaternion_wxyz(&mut self) -> Result<Quaternion, Error> {
+        let mut q = Quaternion::new();
+        q.w = ReadRoseExt::read_f32(self)?;
+        q.x = ReadRoseExt::read_f32(self)?;
+        q.y = ReadRoseExt::read_f32(self)?;
+        q.z = ReadRoseExt::read_f32(self)?;
+        Ok(q)
     }
 }

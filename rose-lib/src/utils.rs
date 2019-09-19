@@ -1,3 +1,5 @@
+pub type Quaternion = Vector4<f32>;
+
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct Color4 {
     pub r: f32,
