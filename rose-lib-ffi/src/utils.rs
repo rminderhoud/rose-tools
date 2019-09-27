@@ -65,7 +65,22 @@ pub unsafe extern "C" fn ffi_string_free(s: *mut FfiString) {
 pub type FfiQuaternion = FfiVector4_f32;
 
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
+pub struct FfiVector2_f32 {
+    pub x: f32,
+    pub y: f32,
+}
+
+#[repr(C)]
+#[derive(Debug, Default, PartialEq)]
+pub struct FfiVector3_i16 {
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
+}
+
+#[repr(C)]
+#[derive(Debug, Default, PartialEq)]
 pub struct FfiVector3_f32 {
     pub x: f32,
     pub y: f32,
@@ -73,10 +88,28 @@ pub struct FfiVector3_f32 {
 }
 
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
+pub struct FfiVector4_i16 {
+    pub w: i16,
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
+}
+
+#[repr(C)]
+#[derive(Debug, Default, PartialEq)]
 pub struct FfiVector4_f32 {
     pub w: f32,
     pub x: f32,
     pub y: f32,
     pub z: f32,
+}
+
+#[repr(C)]
+#[derive(Debug, Default, PartialEq)]
+pub struct FfiColor4 {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+    pub a: f32,
 }

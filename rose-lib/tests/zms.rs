@@ -13,9 +13,9 @@ fn read_zms() {
     root.push("tests");
     root.push("data");
 
-    let file1 = root.join("HEADBAD01.ZMS");
-    let file2 = root.join("STONE014.ZMS");
-    let file3 = root.join("CART01_ABILITY01.ZMS");
+    let file1 = root.join("headbad01.zms");
+    let file2 = root.join("stone014.zms");
+    let file3 = root.join("cart01_ability01.zms");
 
     let model1 = ZMS::from_path(&file1).unwrap();
     assert_eq!(model1.identifier.as_str(), "ZMS0008");
@@ -84,9 +84,9 @@ fn write_zms() {
     root.push("tests");
     root.push("data");
 
-    let file1 = root.join("HEADBAD01.ZMS");
-    let file2 = root.join("STONE014.ZMS");
-    let file3 = root.join("CART01_ABILITY01.ZMS");
+    let file1 = root.join("headbad01.zms");
+    let file2 = root.join("stone014.zms");
+    let file3 = root.join("cart01_ability01.zms");
 
     for zms_file in [file1, file2, file3].iter() {
         let f = File::open(&zms_file).unwrap();
