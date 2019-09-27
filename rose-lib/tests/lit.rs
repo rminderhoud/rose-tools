@@ -38,8 +38,10 @@ fn read_lit() {
     assert_eq!(last_obj.id, 266);
     assert_eq!(last_obj.parts.len(), 1);
 
-    assert_eq!(last_part.name,
-               "stonewall03_Object_266_0_32_32_LightingMap.tga");
+    assert_eq!(
+        last_part.name,
+        "stonewall03_Object_266_0_32_32_LightingMap.tga"
+    );
     assert_eq!(last_part.id, 0);
     assert_eq!(last_part.filename, "Object_32_0.dds");
     assert_eq!(last_part.lightmap_index, 0);
@@ -92,8 +94,10 @@ fn write_lit() {
     assert_eq!(last_obj.id, 266);
     assert_eq!(last_obj.parts.len(), 1);
 
-    assert_eq!(last_part.name,
-               "stonewall03_Object_266_0_32_32_LightingMap.tga");
+    assert_eq!(
+        last_part.name,
+        "stonewall03_Object_266_0_32_32_LightingMap.tga"
+    );
     assert_eq!(last_part.id, 0);
     assert_eq!(last_part.filename, "Object_32_0.dds");
     assert_eq!(last_part.lightmap_index, 0);

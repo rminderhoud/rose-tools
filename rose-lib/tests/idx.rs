@@ -25,18 +25,21 @@ fn write_idx() {
 
     assert_eq!(data_vfs.filename.to_str().unwrap(), "DATA.VFS");
     assert_eq!(data_vfs.files.len(), 3193);
-    assert_eq!(data_vfs_last.filepath.to_str().unwrap(),
-               "3DDATA/EFFECT/_YETITYRANT_SKILL_01.EFT");
+    assert_eq!(
+        data_vfs_last.filepath.to_str().unwrap(),
+        "3DDATA/EFFECT/_YETITYRANT_SKILL_01.EFT"
+    );
 
     let ref map_vfs = idx.file_systems[1];
     let ref map_vfs_last = map_vfs.files[map_vfs.files.len() - 1];
 
     assert_eq!(map_vfs.filename.to_str().unwrap(), "MAP.VFS");
     assert_eq!(map_vfs.files.len(), 11053);
-    assert_eq!(map_vfs_last.filepath.to_str().unwrap(),
-               "3DDATA/TERRAIN/TILES/ZONETYPEINFO.STB");
+    assert_eq!(
+        map_vfs_last.filepath.to_str().unwrap(),
+        "3DDATA/TERRAIN/TILES/ZONETYPEINFO.STB"
+    );
 }
-
 
 #[test]
 fn read_idx() {
@@ -70,14 +73,18 @@ fn read_idx() {
 
     assert_eq!(data_vfs.filename.to_str().unwrap(), "DATA.VFS");
     assert_eq!(data_vfs.files.len(), 3193);
-    assert_eq!(data_vfs_last.filepath.to_str().unwrap(),
-               "3DDATA/EFFECT/_YETITYRANT_SKILL_01.EFT");
+    assert_eq!(
+        data_vfs_last.filepath.to_str().unwrap(),
+        "3DDATA/EFFECT/_YETITYRANT_SKILL_01.EFT"
+    );
 
     let ref map_vfs = new_idx.file_systems[1];
     let ref map_vfs_last = map_vfs.files[map_vfs.files.len() - 1];
 
     assert_eq!(map_vfs.filename.to_str().unwrap(), "MAP.VFS");
     assert_eq!(map_vfs.files.len(), 11053);
-    assert_eq!(map_vfs_last.filepath.to_str().unwrap(),
-               "3DDATA/TERRAIN/TILES/ZONETYPEINFO.STB");
+    assert_eq!(
+        map_vfs_last.filepath.to_str().unwrap(),
+        "3DDATA/TERRAIN/TILES/ZONETYPEINFO.STB"
+    );
 }

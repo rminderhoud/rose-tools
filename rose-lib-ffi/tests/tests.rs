@@ -1,6 +1,6 @@
+use roselib_ffi::*;
 use std::ffi::CString;
 use std::path::{Path, PathBuf};
-use roselib_ffi::*;
 
 fn data_dir() -> PathBuf {
     let project_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -69,7 +69,7 @@ fn read_zmd() {
             assert_eq!(res, true);
             ffi_string_free(name);
 
-            let mut parent:i32 = -1;
+            let mut parent: i32 = -1;
             let res = skeleton_get_bone_parent(zmd, 0, &mut parent as *mut i32);
             assert_eq!(res, true);
             assert_eq!(parent, 0);
@@ -97,7 +97,7 @@ fn read_zmd() {
             assert_eq!(res, true);
             ffi_string_free(name);
 
-            let mut parent:i32 = -1;
+            let mut parent: i32 = -1;
             let res = skeleton_get_dummy_parent(zmd, 0, &mut parent as *mut i32);
             assert_eq!(res, true);
             assert_eq!(parent, 12);

@@ -35,7 +35,7 @@ pub trait PathRoseExt {
     /// use std::path::PathBuf;
     /// use roselib::io::{PathRoseExt};
     ///
-    /// let path = PathBuf::from("FOO/BAR\\BAZ");
+    /// let path = PathBuf::from_rose_path("FOO/BAR\\BAZ");
     /// let str = path.to_rose_path();
     /// assert_eq!("FOO/BAR/BAZ", str);
     /// ```
@@ -47,6 +47,7 @@ impl PathRoseExt for PathBuf {
         let s = path_str.replace(r#"\"#, "/");
         PathBuf::from(s)
     }
+
     fn to_rose_path(&self) -> String {
         let mut s = String::new();
         let comp_count = self.components().count();

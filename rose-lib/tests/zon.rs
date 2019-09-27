@@ -1,10 +1,9 @@
 extern crate roselib;
 
-use std::path::PathBuf;
-use roselib::files::ZON;
 use roselib::files::zon::*;
+use roselib::files::ZON;
 use roselib::io::RoseFile;
-
+use std::path::PathBuf;
 
 #[test]
 fn read_zon() {

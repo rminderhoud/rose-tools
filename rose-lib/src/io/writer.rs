@@ -67,9 +67,7 @@ pub trait WriteRoseExt: Write + Seek {
 
 impl<W> WriteRoseExt for W
 where
-    W: Write,
-    W: Seek,
-    W: WriteBytesExt,
+    W: Write + Seek + WriteBytesExt,
 {
     fn write_u8(&mut self, n: u8) -> Result<(), Error> {
         WriteBytesExt::write_u8(self, n)?;

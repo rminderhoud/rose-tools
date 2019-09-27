@@ -68,10 +68,7 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
 
 impl<R> ReadRoseExt for R
 where
-    R: Read,
-    R: Seek,
-    R: BufRead,
-    R: ReadBytesExt,
+    R: Read + Seek + BufRead + ReadBytesExt,
 {
     fn read_u8(&mut self) -> Result<u8, Error> {
         Ok(ReadBytesExt::read_u8(self)?)

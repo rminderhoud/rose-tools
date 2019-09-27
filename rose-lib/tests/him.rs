@@ -1,8 +1,8 @@
 extern crate roselib;
 
-use std::path::PathBuf;
 use roselib::files::HIM;
 use roselib::io::RoseFile;
+use std::path::PathBuf;
 
 #[test]
 fn read_him() {
@@ -23,6 +23,4 @@ fn read_him() {
     assert_eq!(him.scale, 250.0);
     assert_eq!(him.min_height, 0.0);
     assert_eq!(him.max_height, 5463.6577);
-
 }
-

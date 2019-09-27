@@ -1,6 +1,7 @@
-use std::ffi::{CStr, CString};
-use std::ptr;
 use libc;
+use std::ffi::{CStr, CString};
+use std::fmt;
+use std::ptr;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -14,24 +15,24 @@ impl FfiString {
         Self::default()
     }
 
-    pub fn set_string(&mut self, v: &str){
+    pub fn set_string(&mut self, v: &str) {
         let c_str = CString::new(v.as_bytes()).unwrap_or_default();
         self.len = c_str.as_bytes_with_nul().len();
         self.chars = c_str.into_raw() as *mut libc::c_char;
     }
 
+    /*
     pub fn to_string(&self) -> String {
-        unsafe {
-            CStr::from_ptr(self.chars).to_string_lossy().to_string()
-        }
+        unsafe { CStr::from_ptr(self.chars).to_string_lossy().to_string() }
     }
+    */
 }
 
 impl Default for FfiString {
     fn default() -> FfiString {
         FfiString {
             chars: ptr::null::<libc::c_char>() as *mut libc::c_char,
-            len: 0
+            len: 0,
         }
     }
 }
@@ -44,13 +45,20 @@ impl Drop for FfiString {
     }
 }
 
+impl fmt::Display for FfiString {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = unsafe { CStr::from_ptr(self.chars).to_string_lossy().to_string() };
+        write!(f, "{}", s)
+    }
+}
+
 #[no_mangle]
-pub unsafe extern fn ffi_string_new() -> *mut FfiString {
+pub unsafe extern "C" fn ffi_string_new() -> *mut FfiString {
     Box::into_raw(Box::new(FfiString::new()))
 }
 
 #[no_mangle]
-pub unsafe extern fn ffi_string_free(s: *mut FfiString) {
+pub unsafe extern "C" fn ffi_string_free(s: *mut FfiString) {
     Box::from_raw(s); // Drop
 }
 
