@@ -73,7 +73,7 @@ impl RoseFile for Mesh {
         let version = match self.identifier.as_str() {
             "ZMS0007" => 7,
             "ZMS0008" => 8,
-            _ => bail!("Unsupported Mesh version"),
+            _ => bail!(format!("Unsupported Mesh version: {}", self.identifier)),
         };
 
         self.format = reader.read_i32()?;

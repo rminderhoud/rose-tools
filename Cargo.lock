@@ -546,7 +546,7 @@ dependencies = [
 
 [[package]]
 name = "roselib-ffi"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cbindgen 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",

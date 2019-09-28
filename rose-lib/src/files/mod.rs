@@ -5,6 +5,7 @@ pub mod lit;
 pub mod stb;
 pub mod til;
 pub mod zmd;
+pub mod zmo;
 pub mod zms;
 pub mod zon;
 
@@ -14,5 +15,6 @@ pub use self::lit::LIT;
 pub use self::stb::STB;
 pub use self::til::TIL;
 pub use self::zmd::ZMD;
+pub use self::zmo::ZMO;
 pub use self::zms::ZMS;
 pub use self::zon::ZON;

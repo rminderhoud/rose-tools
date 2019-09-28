@@ -1,6 +1,8 @@
+use std::cmp;
+use std::io::{Seek, Write};
+
 use byteorder::{LittleEndian, WriteBytesExt};
 use failure::Error;
-use std::io::{Seek, Write};
 use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 
 /// Extends `BufWriter` with methods for writing ROSE data types
@@ -116,9 +118,19 @@ where
     }
 
     fn write_string(&mut self, string: &str, len: i32) -> Result<(), Error> {
-        for i in 0..len {
+        let string_len = string.len() as i32;
+
+        let n_chars = cmp::min(string_len, len);
+        for i in 0..n_chars {
             WriteRoseExt::write_u8(self, string.as_bytes()[i as usize])?;
         }
+
+        if len > string_len {
+            for _ in 0..(len - string_len) {
+                WriteRoseExt::write_u8(self, 0x00)?;
+            }
+        }
+
         Ok(())
     }
 

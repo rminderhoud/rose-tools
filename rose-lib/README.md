@@ -36,6 +36,7 @@ for vfs in idx.file_systems {
 * STB - ROSE Data table
 * TIL - ROSE Map Tile [Read-only]
 * ZMD - ROSE Skeleton
+* ZMO - ROSE Motion
 * ZMS - ROSE 3D Mesh
 * ZON - ROSE Zone [Read-only]
 
