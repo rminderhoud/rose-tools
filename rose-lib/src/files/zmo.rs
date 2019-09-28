@@ -160,9 +160,9 @@ impl RoseFile for Motion {
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct Channel {
-    typ: ChannelType,
-    index: u32,
-    frames: ChannelData,
+    pub typ: ChannelType,
+    pub index: u32,
+    pub frames: ChannelData,
 }
 
 impl Channel {

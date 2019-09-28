@@ -13,40 +13,21 @@ fn read_zmo() {
     root.push("tests");
     root.push("data");
 
-    {
-        let zmo_path = root.join("empty_walk_m1.zmo");
-        let zmo = ZMO::from_path(&zmo_path).unwrap();
-        assert_eq!(zmo.identifier, "ZMO0002");
-        assert_eq!(zmo.fps, 30);
-        assert_eq!(zmo.frames, 27);
-        assert_eq!(zmo.channels.len(), 22);
-    }
+    // Motion list: (name, frames, channels)
+    let motions = [
+        ("empty_walk_m1.zmo", 27, 22),
+        ("eluxsamtower.zmo", 11, 216),
+        ("item_ani.zmo", 61, 2),
+        ("_wind_01.zmo", 47, 2196),
+    ];
 
-    {
-        let zmo_path = root.join("eluxsamtower.zmo");
+    for motion in motions.iter() {
+        let zmo_path = root.join(motion.0);
         let zmo = ZMO::from_path(&zmo_path).unwrap();
         assert_eq!(zmo.identifier, "ZMO0002");
         assert_eq!(zmo.fps, 30);
-        assert_eq!(zmo.frames, 11);
-        assert_eq!(zmo.channels.len(), 216);
-    }
-
-    {
-        let zmo_path = root.join("item_ani.zmo");
-        let zmo = ZMO::from_path(&zmo_path).unwrap();
-        assert_eq!(zmo.identifier, "ZMO0002");
-        assert_eq!(zmo.fps, 30);
-        assert_eq!(zmo.frames, 61);
-        assert_eq!(zmo.channels.len(), 2);
-    }
-
-    {
-        let zmo_path = root.join("_wind_01.zmo");
-        let zmo = ZMO::from_path(&zmo_path).unwrap();
-        assert_eq!(zmo.identifier, "ZMO0002");
-        assert_eq!(zmo.fps, 30);
-        assert_eq!(zmo.frames, 47);
-        assert_eq!(zmo.channels.len(), 2196);
+        assert_eq!(zmo.frames, motion.1);
+        assert_eq!(zmo.channels.len(), motion.2);
     }
 }
 

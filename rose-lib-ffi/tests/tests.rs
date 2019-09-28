@@ -1,4 +1,5 @@
 use roselib_ffi::*;
+use std::f32;
 use std::ffi::CString;
 use std::path::{Path, PathBuf};
 use std::ptr;
@@ -281,6 +282,109 @@ fn read_zms() {
             assert_eq!(false, mesh_get_vertex_uv4(zms, 0, ptr::null_mut()));
 
             mesh_free(zms);
+        }
+    }
+}
+
+#[test]
+fn read_zmo() {
+    unsafe {
+        {
+            // Motion list: (name, frames, channels)
+            let motions = [
+                ("empty_walk_m1.zmo", 27, 22),
+                ("eluxsamtower.zmo", 11, 216),
+                ("item_ani.zmo", 61, 2),
+                ("_wind_01.zmo", 47, 2196),
+            ];
+
+            for motion in motions.iter() {
+                let filepath = test_file(motion.0);
+                let zmo = motion_new();
+
+                let res = motion_read(zmo, filepath.into_raw());
+                assert_eq!(res, true);
+
+                assert_eq!(motion_fps(zmo), 30);
+                assert_eq!(motion_frames(zmo), motion.1);
+                assert_eq!(motion_channels(zmo), motion.2);
+
+                for ci in 0..motion_channels(zmo) {
+                    let mut t = MotionChannelType::None;
+                    let res = motion_get_channel_type(zmo, ci, &mut t);
+
+                    assert_eq!(res, true);
+                    assert_ne!(t, MotionChannelType::None);
+
+                    for fi in 0..motion_frames(zmo) {
+                        match t {
+                            MotionChannelType::None => {}
+                            MotionChannelType::Position => {
+                                let mut v = FfiVector3_f32::default();
+                                let res = motion_get_position_frame(zmo, ci, fi, &mut v);
+                                assert_eq!(res, true);
+                                assert_ne!(v, FfiVector3_f32::default());
+                            }
+                            MotionChannelType::Rotation => {
+                                let mut q = FfiQuaternion::default();
+                                let res = motion_get_rotation_frame(zmo, ci, fi, &mut q);
+                                assert_eq!(res, true);
+                                assert_ne!(q, FfiQuaternion::default());
+                            }
+                            MotionChannelType::Normal => {
+                                let mut v = FfiVector3_f32::default();
+                                let res = motion_get_normal_frame(zmo, ci, fi, &mut v);
+                                assert_eq!(res, true);
+                                assert_ne!(v, FfiVector3_f32::default());
+                            }
+                            MotionChannelType::Alpha => {
+                                let mut f = f32::NAN;
+                                let res = motion_get_alpha_frame(zmo, ci, fi, &mut f);
+                                assert_eq!(res, true);
+                                assert_ne!(f, f32::NAN);
+                            }
+                            MotionChannelType::UV1 => {
+                                let mut v = FfiVector2_f32::default();
+                                let res = motion_get_uv1_frame(zmo, ci, fi, &mut v);
+                                assert_eq!(res, true);
+                                assert_ne!(v, FfiVector2_f32::default());
+                            }
+                            MotionChannelType::UV2 => {
+                                let mut v = FfiVector2_f32::default();
+                                let res = motion_get_uv2_frame(zmo, ci, fi, &mut v);
+                                assert_eq!(res, true);
+                                assert_ne!(v, FfiVector2_f32::default());
+                            }
+                            MotionChannelType::UV3 => {
+                                let mut v = FfiVector2_f32::default();
+                                let res = motion_get_uv3_frame(zmo, ci, fi, &mut v);
+                                assert_eq!(res, true);
+                                assert_ne!(v, FfiVector2_f32::default());
+                            }
+                            MotionChannelType::UV4 => {
+                                let mut v = FfiVector2_f32::default();
+                                let res = motion_get_uv4_frame(zmo, ci, fi, &mut v);
+                                assert_eq!(res, true);
+                                assert_ne!(v, FfiVector2_f32::default());
+                            }
+                            MotionChannelType::Texture => {
+                                let mut f = f32::NAN;
+                                let res = motion_get_texture_frame(zmo, ci, fi, &mut f);
+                                assert_eq!(res, true);
+                                assert_ne!(f, f32::NAN);
+                            }
+                            MotionChannelType::Scale => {
+                                let mut f = f32::NAN;
+                                let res = motion_get_scale_frame(zmo, ci, fi, &mut f);
+                                assert_eq!(res, true);
+                                assert_ne!(f, f32::NAN);
+                            }
+                        }
+                    }
+                }
+
+                motion_free(zmo);
+            }
         }
     }
 }
