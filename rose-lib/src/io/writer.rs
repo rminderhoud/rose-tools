@@ -21,9 +21,9 @@ use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 /// writer.write_cstring("null terminate me").unwrap();
 /// ```
 ///
-/// NOTE: Strings are encoded as UTF-8 and no UTF-8 strings are lossily encoded
-/// into UTF-8. The original ROSE files were encoded as EUC-KR, as such some
-/// data may be lost.
+/// NOTE: Strings are encoded as UTF-8. The original ROSE files were encoded as EUC-KR,
+/// as such if reading from an original file the data written back will be written using
+/// a different encoding.
 ///
 // Note: Clippy recommends passing by value for copy-able small args but
 // we ignore that optimization in favor of API consistency

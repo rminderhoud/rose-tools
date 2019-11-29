@@ -1,6 +1,8 @@
 use std::io::{BufRead, Read, Seek};
+use std::str;
 
 use byteorder::{LittleEndian, ReadBytesExt};
+use encoding_rs::EUC_KR;
 use failure::Error;
 
 use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
@@ -23,8 +25,8 @@ use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 /// println!("x is {}, y is {}, s is {}", x, y, s);
 /// ```
 ///
-/// NOTE: Strings are encoded as UTF-8 and the original ROSE files were encoded
-/// as EUC-KR, as such some string data may be lost.
+/// NOTE: Strings are decoded as UTF-8. If the string is not valid UTF-8 then EUC-KR
+/// is used as the fallback using replacement characters where necessary.
 pub trait ReadRoseExt: Read + Seek + BufRead {
     fn read_u8(&mut self) -> Result<u8, Error>;
     fn read_u16(&mut self) -> Result<u16, Error>;
@@ -114,7 +116,7 @@ where
         let mut buffer: Vec<u8> = Vec::new();
         self.read_until(0x00, &mut buffer)?;
         let _ = buffer.pop();
-        Ok(String::from_utf8_lossy(&buffer).into_owned())
+        Ok(decode_string(buffer))
     }
 
     fn read_string(&mut self, n: u64) -> Result<String, Error> {
@@ -127,7 +129,7 @@ where
             let _ = buffer.pop();
         }
 
-        Ok(String::from_utf8_lossy(&buffer).into_owned())
+        Ok(decode_string(buffer))
     }
 
     fn read_string_u8(&mut self) -> Result<String, Error> {
@@ -217,5 +219,17 @@ where
         q.y = ReadRoseExt::read_f32(self)?;
         q.z = ReadRoseExt::read_f32(self)?;
         Ok(q)
+    }
+}
+
+/// Decodes a string by first trying to read as UTF-8, otherwise falls back
+/// to EUC-KR encoding using replacement characters where necessary.
+fn decode_string(b: Vec<u8>) -> String {
+    match str::from_utf8(&b) {
+        Ok(s) => String::from(s),
+        Err(_) => {
+            let (decoded, _encoding, _valid) = EUC_KR.decode(&b);
+            String::from(decoded)
+        }
     }
 }
