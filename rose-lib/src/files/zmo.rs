@@ -1,9 +1,11 @@
 //! ROSE Online Motion
 use std::convert::TryFrom;
 
+use failure::Error;
+use serde::{Deserialize, Serialize};
+
 use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use crate::utils::{Quaternion, Vector2, Vector3};
-use failure::Error;
 
 /// Motion File
 pub type ZMO = Motion;

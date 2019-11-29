@@ -1,5 +1,6 @@
 //! ROSE Online 3D Meshes
 use failure::Error;
+use serde::{Deserialize, Serialize};
 
 use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use crate::utils::{BoundingBox, Color4, Vector2, Vector3, Vector4};

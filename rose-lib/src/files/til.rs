@@ -2,6 +2,7 @@
 use std::iter;
 
 use failure::Error;
+use serde::{Deserialize, Serialize};
 
 use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 

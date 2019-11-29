@@ -4,6 +4,7 @@ use std::io::SeekFrom;
 use std::iter;
 
 use failure::Error;
+use serde::{Deserialize, Serialize};
 
 use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use crate::utils::{Vector2, Vector3};

@@ -31,6 +31,7 @@ use std::io::SeekFrom;
 use std::path::PathBuf;
 
 use failure::Error;
+use serde::{Deserialize, Serialize};
 
 use crate::io::{PathRoseExt, ReadRoseExt, RoseFile, WriteRoseExt};
 

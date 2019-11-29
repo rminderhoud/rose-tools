@@ -1,5 +1,6 @@
 //! ROSE Online Skeleton
 use failure::Error;
+use serde::{Deserialize, Serialize};
 
 use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use crate::utils::{Quaternion, Vector3};
