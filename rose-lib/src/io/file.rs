@@ -3,7 +3,8 @@ use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
 use failure::Error;
-use io::{ReadRoseExt, WriteRoseExt};
+
+use crate::io::{ReadRoseExt, WriteRoseExt};
 
 pub trait RoseFile {
     /// Construct a new file

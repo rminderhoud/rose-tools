@@ -1,7 +1,8 @@
 //! ROSE Online 3D Meshes
 use failure::Error;
-use io::{ReadRoseExt, RoseFile, WriteRoseExt};
-use utils::{BoundingBox, Color4, Vector2, Vector3, Vector4};
+
+use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
+use crate::utils::{BoundingBox, Color4, Vector2, Vector3, Vector4};
 
 /// Mesh File
 pub type ZMS = Mesh;

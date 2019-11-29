@@ -5,7 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use encoding_rs::EUC_KR;
 use failure::Error;
 
-use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
+use crate::utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 
 /// Extends `BufReader` with methods for reading ROSE data types
 ///

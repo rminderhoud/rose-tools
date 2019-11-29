@@ -1,7 +1,8 @@
 //! ROSE Online Skeleton
 use failure::Error;
-use io::{ReadRoseExt, RoseFile, WriteRoseExt};
-use utils::{Quaternion, Vector3};
+
+use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
+use crate::utils::{Quaternion, Vector3};
 
 /// Skeleton file
 pub type ZMD = Skeleton;

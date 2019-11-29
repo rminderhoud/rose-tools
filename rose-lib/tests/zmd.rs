@@ -1,5 +1,3 @@
-extern crate roselib;
-
 use std::fs::File;
 use std::io::Cursor;
 use std::path::PathBuf;

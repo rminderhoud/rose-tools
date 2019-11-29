@@ -3,7 +3,8 @@ use std::io::{Seek, Write};
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use failure::Error;
-use utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
+
+use crate::utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 
 /// Extends `BufWriter` with methods for writing ROSE data types
 ///

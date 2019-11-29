@@ -4,7 +4,8 @@
 //! for blending with terrain/object textures.
 //!
 use failure::Error;
-use io::{ReadRoseExt, RoseFile, WriteRoseExt};
+
+use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 
 /// Lightmap file
 pub type LIT = Lightmap;

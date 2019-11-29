@@ -1,7 +1,9 @@
 //! ROSE Online Heightmaps
-use failure::Error;
-use io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use std::f32;
+
+use failure::Error;
+
+use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 
 /// Heightmap File
 pub type HIM = Heightmap;

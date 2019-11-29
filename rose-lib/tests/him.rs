@@ -1,8 +1,7 @@
-extern crate roselib;
+use std::path::PathBuf;
 
 use roselib::files::HIM;
 use roselib::io::RoseFile;
-use std::path::PathBuf;
 
 #[test]
 fn read_him() {

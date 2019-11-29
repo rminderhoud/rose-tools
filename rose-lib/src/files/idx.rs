@@ -31,7 +31,8 @@ use std::io::SeekFrom;
 use std::path::PathBuf;
 
 use failure::Error;
-use io::{PathRoseExt, ReadRoseExt, RoseFile, WriteRoseExt};
+
+use crate::io::{PathRoseExt, ReadRoseExt, RoseFile, WriteRoseExt};
 
 /// Virtual file system index file
 pub type IDX = VfsIndex;

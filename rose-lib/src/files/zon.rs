@@ -4,8 +4,9 @@ use std::io::SeekFrom;
 use std::iter;
 
 use failure::Error;
-use io::{ReadRoseExt, RoseFile, WriteRoseExt};
-use utils::{Vector2, Vector3};
+
+use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
+use crate::utils::{Vector2, Vector3};
 
 /// Zone File
 pub type ZON = Zone;

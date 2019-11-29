@@ -1,7 +1,9 @@
 //! ROSE Online Terrain Tilemap
-use failure::Error;
-use io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use std::iter;
+
+use failure::Error;
+
+use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 
 /// Tile file
 pub type TIL = Tilemap;

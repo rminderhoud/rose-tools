@@ -1,7 +1,9 @@
 //! ROSE Online Data Table
-use failure::Error;
-use io::{ReadRoseExt, RoseFile, WriteRoseExt};
 use std::io::SeekFrom;
+
+use failure::Error;
+
+use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 
 /// Data File
 pub type STB = DataTable;
