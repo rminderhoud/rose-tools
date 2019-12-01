@@ -10,13 +10,22 @@ use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 pub type STB = DataTable;
 
 /// Data Table
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct DataTable {
     pub identifier: String,
     pub headers: Vec<String>,
     pub data: Vec<Vec<String>>,
 }
 
+impl Default for DataTable {
+    fn default() -> DataTable {
+        DataTable {
+            identifier: String::from("STB1"),
+            headers: Vec::new(),
+            data: Vec::new(),
+        }
+    }
+}
 impl DataTable {
     pub fn rows(&self) -> usize {
         self.data.len()

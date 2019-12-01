@@ -1,15 +1,3 @@
-extern crate csv;
-#[macro_use]
-extern crate clap;
-#[macro_use]
-extern crate failure;
-#[macro_use]
-extern crate serde_derive;
-extern crate image;
-extern crate roselib;
-extern crate serde;
-extern crate serde_json;
-
 use std::f32;
 use std::fs;
 use std::fs::File;
@@ -17,9 +5,10 @@ use std::iter;
 use std::path::{Path, PathBuf};
 use std::process::exit;
 
-use clap::ArgMatches;
-use failure::Error;
+use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
+use failure::{bail, Error};
 use image::{GrayImage, ImageBuffer};
+use serde::{Deserialize, Serialize};
 
 use roselib::files::zon::ZoneTileRotation;
 use roselib::files::*;
@@ -40,8 +29,59 @@ struct TilemapFile {
 }
 
 fn main() {
-    let yaml = load_yaml!("main.yaml");
-    let matches = clap::App::from_yaml(yaml).get_matches();
+    let matches = App::new("ROSE Converter")
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about("Convert ROSE Online files to/from various formats")
+        .arg(
+            Arg::with_name("out_dir")
+                .help("Directory to output converted files")
+                .default_value("./out/")
+                .short("o")
+                .global(true),
+        )
+        .settings(&[
+            AppSettings::SubcommandRequiredElseHelp,
+            AppSettings::VersionlessSubcommands,
+            AppSettings::DeriveDisplayOrder,
+        ])
+        .subcommand(
+            SubCommand::with_name("map")
+                .about("Convert ROSE map files")
+                .arg(
+                    Arg::with_name("map_dir")
+                        .help("Map directory containing zon, him, til and ifo files")
+                        .required(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("serialize")
+                .visible_alias("se")
+                .about("Serialize a ROSE File into JSON (CSV for STB/STL)")
+                .arg(
+                    Arg::with_name("input")
+                        .help("Path to ROSE file")
+                        .required(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("deserialize")
+                .visible_alias("de")
+                .about("Deserialize a ROSE file from JSON (CSV for STB/STL)")
+                .arg(
+                    Arg::with_name("type")
+                        .help("ROSE file type")
+                        .case_insensitive(true)
+                        .possible_values(&["stb"])
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("input")
+                        .help("Path to JSON/CSV file")
+                        .required(true),
+                ),
+        )
+        .get_matches();
 
     // Setup output directory
     let out_dir = Path::new(matches.value_of("out_dir").unwrap());
@@ -57,7 +97,8 @@ fn main() {
     // Run subcommands
     let res = match matches.subcommand() {
         ("map", Some(matches)) => convert_map(matches),
-        ("csv", Some(matches)) => convert_csv(matches),
+        ("serialize", Some(matches)) => serialize(matches),
+        ("deserialize", Some(matches)) => deserialize(matches),
         _ => {
             eprintln!("ROSE Online Converter. Run with `--help` for more info.");
             exit(1);
@@ -67,44 +108,85 @@ fn main() {
     if let Err(e) = res {
         eprintln!("Error occured: {}", e);
     }
+}
 
-    /*
-    // -- Setup input file
-    let in_path = Path::new(matches.value_of("file").unwrap());
-    let in_file = match File::open(in_path) {
-        Ok(f) => f,
-        Err(e) => {
-            eprintln!("Error opening input file: {}", e);
-            exit(1);
-        }
-    };
+fn serialize(matches: &ArgMatches) -> Result<(), Error> {
+    let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
+    let input = Path::new(matches.value_of("input").unwrap_or_default());
 
-    let mut out_filepath = PathBuf::from(out_dir);
-    out_filepath.push(in_path.file_name().unwrap_or(OsStr::new("out.obj")));
-    out_filepath.set_extension("obj");
-
-    let out_file = match File::create(&out_filepath) {
-        Ok(f) => f,
-        Err(e) => {
-            eprintln!("Error creating output file {}: {}",
-                      out_filepath.to_str().unwrap_or(""),
-                      e);
-            exit(1);
-        }
-    };
-
-    // -- Do conversion
-    let conv_res = match matches.subcommand_name() {
-        Some("zms_to_obj") => zms_to_obj(in_file, out_file),
-        _ => Err("Please provide a valid subcommand".into()),
-    };
-
-    // -- Handle conversion errors
-    if let Err(e) = conv_res {
-        eprintln!("Error converting the file: {}", e);
-        exit(1);
+    if !input.exists() {
+        bail!("File does not exist: {}", input.display());
     }
-    */
+
+    let extension = input
+        .extension()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default()
+        .to_lowercase();
+
+    if extension == "stb" {
+        let stb = STB::from_path(input)?;
+        let out = out_dir
+            .join(input.file_name().unwrap_or_default())
+            .with_extension("csv");
+
+        let mut writer = csv::Writer::from_path(out)?;
+
+        writer.write_record(&stb.headers)?;
+        for row in stb.data {
+            writer.write_record(&row)?;
+        }
+
+        return Ok(());
+    }
+
+    let json = match extension {
+        _ => bail!("Unsupported file type: {}", extension),
+    };
+
+    Ok(())
+}
+
+fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
+    let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
+    let filetype = matches.value_of("type").unwrap_or_default();
+    let input = Path::new(matches.value_of("input").unwrap_or_default());
+
+    if !input.exists() {
+        bail!("File does not exist: {}", input.display());
+    }
+
+    if filetype.to_lowercase() == "stb" {
+        let out = out_dir
+            .join(input.file_name().unwrap_or_default())
+            .with_extension("stb");
+
+        let mut stb = STB::new();
+
+        let mut reader = csv::Reader::from_path(input)?;
+        for header in reader.headers()? {
+            stb.headers.push(header.to_string())
+        }
+
+        for record in reader.records() {
+            let mut row = Vec::new();
+            for field in record?.iter() {
+                row.push(field.to_string());
+            }
+            stb.data.push(row);
+        }
+
+        dbg!(&out);
+        stb.write_to_path(&out)?;
+        return Ok(());
+    }
+
+    match filetype {
+        _ => bail!("Unsupported file type: {}", filetype),
+    }
+
+    Ok(())
 }
 
 /// Convert map files:
@@ -302,42 +384,6 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
     serde_json::to_writer_pretty(f, &tilemap)?;
 
     // EXPORT IFO data as JSON
-
-    Ok(())
-}
-
-fn convert_csv(matches: &ArgMatches) -> Result<(), Error> {
-    let file_paths = matches.values_of("file").unwrap();
-
-    for file_path in file_paths {
-        let file_path = Path::new(file_path);
-
-        if !file_path.is_file() {
-            bail!("Path is not a file: {:?}", file_path);
-        }
-
-        let ext = file_path
-            .extension()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_lowercase();
-
-        if ext == "stb" {
-            let stb = STB::from_path(file_path)?;
-
-            let mut out = PathBuf::from(matches.value_of("out_dir").unwrap_or("out"));
-            out.push(file_path.file_stem().unwrap());
-            out.set_extension("csv");
-
-            let mut writer = csv::Writer::from_path(out)?;
-            writer.write_record(&stb.headers)?;
-
-            for row in stb.data {
-                writer.write_record(&row)?;
-            }
-        }
-    }
 
     Ok(())
 }
