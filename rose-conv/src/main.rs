@@ -1,6 +1,7 @@
 use std::f32;
 use std::fs;
 use std::fs::File;
+use std::io::Write;
 use std::iter;
 use std::path::{Path, PathBuf};
 use std::process::exit;
@@ -8,6 +9,7 @@ use std::process::exit;
 use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use failure::{bail, Error};
 use image::{GrayImage, ImageBuffer};
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use roselib::files::zon::ZoneTileRotation;
@@ -72,7 +74,7 @@ fn main() {
                     Arg::with_name("type")
                         .help("ROSE file type")
                         .case_insensitive(true)
-                        .possible_values(&["stb"])
+                        .possible_values(&["lit", "stb"])
                         .required(true),
                 )
                 .arg(
@@ -110,6 +112,22 @@ fn main() {
     }
 }
 
+fn rose_to_json<F>(path: &Path) -> Result<String, Error>
+where
+    F: RoseFile,
+    F: Serialize,
+{
+    Ok(serde_json::to_string(&F::from_path(&path)?)?)
+}
+
+fn json_to_rose<F>(path: &Path) -> Result<F, Error>
+where
+    F: RoseFile,
+    F: DeserializeOwned,
+{
+    Ok(serde_json::from_reader(File::open(&path)?)?)
+}
+
 fn serialize(matches: &ArgMatches) -> Result<(), Error> {
     let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
     let input = Path::new(matches.value_of("input").unwrap_or_default());
@@ -125,14 +143,15 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         .unwrap_or_default()
         .to_lowercase();
 
+    let out = out_dir
+        .join(input.file_name().unwrap_or_default())
+        .with_extension("");
+
     if extension == "stb" {
+        let out = out.with_extension("csv");
         let stb = STB::from_path(input)?;
-        let out = out_dir
-            .join(input.file_name().unwrap_or_default())
-            .with_extension("csv");
 
         let mut writer = csv::Writer::from_path(out)?;
-
         writer.write_record(&stb.headers)?;
         for row in stb.data {
             writer.write_record(&row)?;
@@ -141,9 +160,17 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         return Ok(());
     }
 
-    let json = match extension {
+    let json = match extension.as_str() {
+        "idx" => rose_to_json::<IDX>(&input)?,
+        "lit" => rose_to_json::<LIT>(&input)?,
+        "til" => rose_to_json::<TIL>(&input)?,
+        "zon" => rose_to_json::<ZON>(&input)?,
         _ => bail!("Unsupported file type: {}", extension),
     };
+
+    let out = out.with_extension("json");
+    let mut f = File::create(&out)?;
+    f.write_all(json.as_bytes())?;
 
     Ok(())
 }
@@ -157,11 +184,11 @@ fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
         bail!("File does not exist: {}", input.display());
     }
 
-    if filetype.to_lowercase() == "stb" {
-        let out = out_dir
-            .join(input.file_name().unwrap_or_default())
-            .with_extension("stb");
+    let out = out_dir
+        .join(input.file_name().unwrap_or_default())
+        .with_extension(filetype);
 
+    if filetype.to_lowercase() == "stb" {
         let mut stb = STB::new();
 
         let mut reader = csv::Reader::from_path(input)?;
@@ -177,12 +204,13 @@ fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
             stb.data.push(row);
         }
 
-        dbg!(&out);
         stb.write_to_path(&out)?;
         return Ok(());
     }
 
     match filetype {
+        "idx" => json_to_rose::<IDX>(&input)?.write_to_path(&out)?,
+        "lit" => json_to_rose::<LIT>(&input)?.write_to_path(&out)?,
         _ => bail!("Unsupported file type: {}", filetype),
     }
 
