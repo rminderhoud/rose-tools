@@ -130,7 +130,7 @@ pub trait RoseFile {
     /// let mut zms = ZMS::new();
     /// let _  = zms.write_to_path(&p);
     fn write_to_path(&mut self, path: &Path) -> Result<(), Error> {
-        let f = File::open(path)?;
+        let f = File::create(path)?;
         self.write_to_file(&f)?;
         Ok(())
     }
