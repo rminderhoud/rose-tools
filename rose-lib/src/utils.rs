@@ -28,6 +28,12 @@ impl Vector2<f32> {
     }
 }
 
+impl Vector2<u32> {
+    pub fn new() -> Vector2<u32> {
+        Self::default()
+    }
+}
+
 impl Vector2<i32> {
     pub fn new() -> Vector2<i32> {
         Self::default()

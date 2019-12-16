@@ -58,9 +58,12 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
     fn read_color4(&mut self) -> Result<Color4, Error>;
 
     fn read_vector2_f32(&mut self) -> Result<Vector2<f32>, Error>;
+    fn read_vector2_u32(&mut self) -> Result<Vector2<u32>, Error>;
     fn read_vector2_i32(&mut self) -> Result<Vector2<i32>, Error>;
+
     fn read_vector3_f32(&mut self) -> Result<Vector3<f32>, Error>;
     fn read_vector3_i16(&mut self) -> Result<Vector3<i16>, Error>;
+
     fn read_vector4_f32(&mut self) -> Result<Vector4<f32>, Error>;
     fn read_vector4_i16(&mut self) -> Result<Vector4<i16>, Error>;
 
@@ -160,6 +163,13 @@ where
         let mut v = Vector2::<f32>::new();
         v.x = ReadRoseExt::read_f32(self)?;
         v.y = ReadRoseExt::read_f32(self)?;
+        Ok(v)
+    }
+
+    fn read_vector2_u32(&mut self) -> Result<Vector2<u32>, Error> {
+        let mut v = Vector2::<u32>::new();
+        v.x = ReadRoseExt::read_u32(self)?;
+        v.y = ReadRoseExt::read_u32(self)?;
         Ok(v)
     }
 
