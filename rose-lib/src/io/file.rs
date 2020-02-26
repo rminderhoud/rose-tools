@@ -1,10 +1,9 @@
 use std::fs::File;
-use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
 use failure::Error;
 
-use crate::io::{ReadRoseExt, WriteRoseExt};
+use crate::io::{ReadRoseExt, RoseReader, RoseWriter, WriteRoseExt};
 
 pub trait RoseFile {
     /// Construct a new file
@@ -77,7 +76,7 @@ pub trait RoseFile {
     /// ```
     ///
     fn read_from_file(&mut self, file: &File) -> Result<(), Error> {
-        let mut reader = BufReader::new(file);
+        let mut reader = RoseReader::new(file);
         self.read(&mut reader)?;
         Ok(())
     }
@@ -95,7 +94,7 @@ pub trait RoseFile {
     /// let _ = zms.write_to_file(&f);
     /// ```
     fn write_to_file(&mut self, file: &File) -> Result<(), Error> {
-        let mut writer = BufWriter::new(file);
+        let mut writer = RoseWriter::new(file);
         self.write(&mut writer)?;
         Ok(())
     }
@@ -113,7 +112,7 @@ pub trait RoseFile {
     /// zms.read_from_path(&p);
     fn read_from_path(&mut self, path: &Path) -> Result<(), Error> {
         let f = File::open(path)?;
-        let mut reader = BufReader::new(f);
+        let mut reader = RoseReader::new(f);
         self.read(&mut reader)?;
         Ok(())
     }

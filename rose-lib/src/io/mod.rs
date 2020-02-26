@@ -7,5 +7,5 @@ mod writer;
 
 pub use self::file::RoseFile;
 pub use self::path::PathRoseExt;
-pub use self::reader::ReadRoseExt;
-pub use self::writer::WriteRoseExt;
+pub use self::reader::{ReadRoseExt, RoseReader};
+pub use self::writer::{RoseWriter, WriteRoseExt};

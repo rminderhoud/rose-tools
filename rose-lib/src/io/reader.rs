@@ -1,11 +1,60 @@
-use std::io::{BufRead, Read, Seek};
+use std::cell::Cell;
+use std::io;
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
 use std::str;
 
 use byteorder::{LittleEndian, ReadBytesExt};
-use encoding_rs::EUC_KR;
+use encoding_rs::{EUC_KR, UTF_16LE};
 use failure::Error;
 
 use crate::utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
+
+// Temporary work-around until specialization is supported in Rust
+thread_local! { static WIDE_STRINGS: Cell<bool> = Cell::new(false); }
+
+/// Custom reader that supports some additional configurable options such
+/// as reading strings as wide-strings.
+//
+// TODO: Add tests (sample file: ai_s.stb)
+pub struct RoseReader<R> {
+    pub reader: BufReader<R>,
+}
+
+impl<R: Read> RoseReader<R> {
+    pub fn new(inner: R) -> RoseReader<R> {
+        RoseReader {
+            reader: BufReader::new(inner),
+        }
+    }
+
+    pub fn set_wide_strings(&self, b: bool) {
+        WIDE_STRINGS.with(|v| {
+            v.set(b);
+        });
+    }
+}
+
+impl<R: Read> Read for RoseReader<R> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.reader.read(buf)
+    }
+}
+
+impl<R: Seek> Seek for RoseReader<R> {
+    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        self.reader.seek(pos)
+    }
+}
+
+impl<R: Read> BufRead for RoseReader<R> {
+    fn fill_buf(&mut self) -> io::Result<&[u8]> {
+        self.reader.fill_buf()
+    }
+
+    fn consume(&mut self, amt: usize) {
+        self.reader.consume(amt)
+    }
+}
 
 /// Extends `BufReader` with methods for reading ROSE data types
 ///
@@ -69,6 +118,9 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
 
     fn read_quaternion(&mut self) -> Result<Quaternion, Error>;
     fn read_quaternion_wxyz(&mut self) -> Result<Quaternion, Error>;
+
+    // Read strings as wide strings (2-bytes)
+    fn wide_strings(&self) -> bool;
 }
 
 impl<R> ReadRoseExt for R
@@ -119,7 +171,7 @@ where
         let mut buffer: Vec<u8> = Vec::new();
         self.read_until(0x00, &mut buffer)?;
         let _ = buffer.pop();
-        Ok(decode_string(buffer))
+        Ok(decode_string(buffer, self.wide_strings()))
     }
 
     fn read_string(&mut self, n: u64) -> Result<String, Error> {
@@ -132,7 +184,7 @@ where
             let _ = buffer.pop();
         }
 
-        Ok(decode_string(buffer))
+        Ok(decode_string(buffer, self.wide_strings()))
     }
 
     fn read_string_u8(&mut self) -> Result<String, Error> {
@@ -230,11 +282,21 @@ where
         q.z = ReadRoseExt::read_f32(self)?;
         Ok(q)
     }
+
+    fn wide_strings(&self) -> bool {
+        WIDE_STRINGS.with(|b| b.get())
+    }
 }
 
 /// Decodes a string by first trying to read as UTF-8, otherwise falls back
-/// to EUC-KR encoding using replacement characters where necessary.
-fn decode_string(b: Vec<u8>) -> String {
+/// to EUC-KR encoding using replacement characters where necessary. If the
+/// wide argument is set then it will only try to decode the string as UTF-16LE
+fn decode_string(b: Vec<u8>, wide: bool) -> String {
+    if wide {
+        let (decoded, _encoding, _valid) = UTF_16LE.decode(&b);
+        return String::from(decoded.trim_end_matches('\u{fffd}'));
+    }
+
     match str::from_utf8(&b) {
         Ok(s) => String::from(s),
         Err(_) => {

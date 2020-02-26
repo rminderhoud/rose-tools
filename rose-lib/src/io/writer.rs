@@ -1,11 +1,44 @@
 use std::cmp;
-use std::io::{Seek, Write};
+use std::io;
+use std::io::{BufWriter, Seek, SeekFrom, Write};
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use failure::Error;
 
 use crate::utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
 
+/// Custom writers that supports some additional configurable options such
+/// as writing strings as wide-strings.
+//
+// TODO: Add wide-string writing functionality
+// TODO: Add tests (sample file: ai_s.stb)
+pub struct RoseWriter<W: Write> {
+    pub writer: BufWriter<W>,
+}
+
+impl<W: Write> RoseWriter<W> {
+    pub fn new(inner: W) -> RoseWriter<W> {
+        RoseWriter {
+            writer: BufWriter::new(inner),
+        }
+    }
+}
+
+impl<W: Write> Write for RoseWriter<W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.writer.write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.writer.flush()
+    }
+}
+
+impl<W: Write + Seek> Seek for RoseWriter<W> {
+    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        self.writer.seek(pos)
+    }
+}
 /// Extends `BufWriter` with methods for writing ROSE data types
 ///
 ///# Example

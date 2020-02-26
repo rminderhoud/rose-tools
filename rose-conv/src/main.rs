@@ -14,7 +14,10 @@ use serde::{Deserialize, Serialize};
 
 use roselib::files::zon::ZoneTileRotation;
 use roselib::files::*;
-use roselib::io::RoseFile;
+use roselib::io::{RoseFile, RoseReader};
+
+const SERIALIZE_VALUES: [&'static str; 6] = ["idx", "lit", "stb", "wstb", "til", "zon"];
+const DESERIALIZE_VALUES: [&'static str; 3] = ["idx", "lit", "stb"];
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TilemapTile {
@@ -59,22 +62,31 @@ fn main() {
         .subcommand(
             SubCommand::with_name("serialize")
                 .visible_alias("se")
-                .about("Serialize a ROSE File into JSON (CSV for STB/STL)")
+                .about("Serialize a ROSE File into JSON (CSV for STB/STL).")
                 .arg(
                     Arg::with_name("input")
                         .help("Path to ROSE file")
                         .required(true),
+                )
+                .arg(
+                    Arg::with_name("type")
+                        .help("Type of file")
+                        .required(false)
+                        .short("t")
+                        .long("type")
+                        .takes_value(true)
+                        .possible_values(&SERIALIZE_VALUES),
                 ),
         )
         .subcommand(
             SubCommand::with_name("deserialize")
                 .visible_alias("de")
-                .about("Deserialize a ROSE file from JSON (CSV for STB/STL)")
+                .about("Deserialize a ROSE file from JSON (CSV for STB/STL).")
                 .arg(
                     Arg::with_name("type")
                         .help("ROSE file type")
                         .case_insensitive(true)
-                        .possible_values(&["lit", "stb"])
+                        .possible_values(&DESERIALIZE_VALUES)
                         .required(true),
                 )
                 .arg(
@@ -131,6 +143,7 @@ where
 fn serialize(matches: &ArgMatches) -> Result<(), Error> {
     let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
     let input = Path::new(matches.value_of("input").unwrap_or_default());
+    let input_type = matches.value_of("type").unwrap_or_default();
 
     if !input.exists() {
         bail!("File does not exist: {}", input.display());
@@ -143,13 +156,32 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         .unwrap_or_default()
         .to_lowercase();
 
+    let rose_type = if input_type.is_empty() {
+        if SERIALIZE_VALUES.contains(&extension.as_str()) {
+            bail!("No type provided and unrecognized extension");
+        }
+        String::from(&extension)
+    } else {
+        String::from(input_type)
+    };
+
     let out = out_dir
         .join(input.file_name().unwrap_or_default())
         .with_extension("");
 
-    if extension == "stb" {
+    if rose_type == "stb" || rose_type == "wstb" {
         let out = out.with_extension("csv");
-        let stb = STB::from_path(input)?;
+
+        let stb = if rose_type == "stb" {
+            STB::from_path(input)?
+        } else {
+            let f = File::open(input)?;
+            let mut reader = RoseReader::new(f);
+            reader.set_wide_strings(true);
+            let mut stb: STB = RoseFile::new();
+            stb.read(&mut reader)?;
+            stb
+        };
 
         let mut writer = csv::Writer::from_path(out)?;
         writer.write_record(&stb.headers)?;
@@ -160,7 +192,7 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         return Ok(());
     }
 
-    let json = match extension.as_str() {
+    let json = match rose_type.as_str() {
         "idx" => rose_to_json::<IDX>(&input)?,
         "lit" => rose_to_json::<LIT>(&input)?,
         "til" => rose_to_json::<TIL>(&input)?,

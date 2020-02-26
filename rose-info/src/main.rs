@@ -6,6 +6,11 @@ use std::path::Path;
 
 fn main() {
     let mut args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() <= 0 {
+        println!("Usage: rose-info <command> <paths...>");
+        println!("Commands: til_brushes, zon_brushes");
+        ::std::process::exit(1);
+    }
     let cmd = args.remove(0);
     match cmd.as_str() {
         "til_brushes" => til_brush_info(args.as_slice()),
@@ -19,6 +24,9 @@ fn main() {
 
 fn til_brush_info(paths: &[String]) {
     let mut map_brushes: HashMap<&Path, Vec<u8>> = HashMap::new();
+
+    let mut max_map_path = "";
+    let mut max_map_brush_count = 0;
 
     for til_path in paths {
         let til_path = Path::new(til_path);
@@ -38,8 +46,6 @@ fn til_brush_info(paths: &[String]) {
         }
     }
 
-    let mut max_map_path = "";
-    let mut max_map_brush_count = 0;
     for (map_path, brushes) in map_brushes.iter_mut() {
         brushes.sort_unstable();
         brushes.dedup();
