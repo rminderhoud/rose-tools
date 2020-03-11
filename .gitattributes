@@ -11,3 +11,4 @@
 *.[Zz][Mm][Dd] filter=lfs diff=lfs merge=lfs -text
 *.[Zz][Mm][Oo] filter=lfs diff=lfs merge=lfs -text
 *.[Zz][Mm][Ss] filter=lfs diff=lfs merge=lfs -text
+*.[Zz][Ss][Cc] filter=lfs diff=lfs merge=lfs -text

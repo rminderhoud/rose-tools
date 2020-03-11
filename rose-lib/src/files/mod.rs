@@ -9,6 +9,7 @@ pub mod zmd;
 pub mod zmo;
 pub mod zms;
 pub mod zon;
+pub mod zsc;
 
 pub use self::him::HIM;
 pub use self::idx::IDX;
@@ -20,3 +21,4 @@ pub use self::zmd::ZMD;
 pub use self::zmo::ZMO;
 pub use self::zms::ZMS;
 pub use self::zon::ZON;
+pub use self::zsc::ZSC;

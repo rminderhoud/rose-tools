@@ -5,7 +5,7 @@ use std::io::{BufWriter, Seek, SeekFrom, Write};
 use byteorder::{LittleEndian, WriteBytesExt};
 use failure::Error;
 
-use crate::utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
+use crate::utils::{Color3, Color4, Quaternion, Vector2, Vector3, Vector4};
 
 /// Custom writers that supports some additional configurable options such
 /// as writing strings as wide-strings.
@@ -39,6 +39,7 @@ impl<W: Write + Seek> Seek for RoseWriter<W> {
         self.writer.seek(pos)
     }
 }
+
 /// Extends `BufWriter` with methods for writing ROSE data types
 ///
 ///# Example
@@ -72,6 +73,8 @@ pub trait WriteRoseExt: Write + Seek {
     fn write_i32(&mut self, n: i32) -> Result<(), Error>;
 
     fn write_bool(&mut self, b: bool) -> Result<(), Error>;
+    fn write_bool16(&mut self, b: bool) -> Result<(), Error>;
+
     fn write_f32(&mut self, n: f32) -> Result<(), Error>;
     fn write_f64(&mut self, n: f64) -> Result<(), Error>;
 
@@ -90,7 +93,9 @@ pub trait WriteRoseExt: Write + Seek {
     // Write a string with length prefix as u32
     fn write_string_u32(&mut self, string: &str) -> Result<(), Error>;
 
+    fn write_color3(&mut self, color: &Color3) -> Result<(), Error>;
     fn write_color4(&mut self, color: &Color4) -> Result<(), Error>;
+
     fn write_vector2_f32(&mut self, v: &Vector2<f32>) -> Result<(), Error>;
     fn write_vector2_u32(&mut self, v: &Vector2<u32>) -> Result<(), Error>;
 
@@ -143,6 +148,11 @@ where
         Ok(())
     }
 
+    fn write_bool16(&mut self, b: bool) -> Result<(), Error> {
+        let i = if b { 1u16 } else { 0u16 };
+        WriteRoseExt::write_u16(self, i)?;
+        Ok(())
+    }
     fn write_f32(&mut self, n: f32) -> Result<(), Error> {
         WriteBytesExt::write_f32::<LittleEndian>(self, n)?;
         Ok(())
@@ -191,6 +201,13 @@ where
     fn write_string_u32(&mut self, string: &str) -> Result<(), Error> {
         WriteRoseExt::write_u32(self, string.len() as u32)?;
         self.write_all(&string.as_bytes())?;
+        Ok(())
+    }
+
+    fn write_color3(&mut self, color: &Color3) -> Result<(), Error> {
+        WriteRoseExt::write_f32(self, color.r)?;
+        WriteRoseExt::write_f32(self, color.g)?;
+        WriteRoseExt::write_f32(self, color.b)?;
         Ok(())
     }
 

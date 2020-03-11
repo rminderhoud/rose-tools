@@ -7,7 +7,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use encoding_rs::{EUC_KR, UTF_16LE};
 use failure::Error;
 
-use crate::utils::{Color4, Quaternion, Vector2, Vector3, Vector4};
+use crate::utils::{Color3, Color4, Quaternion, Vector2, Vector3, Vector4};
 
 // Temporary work-around until specialization is supported in Rust
 thread_local! { static WIDE_STRINGS: Cell<bool> = Cell::new(false); }
@@ -86,6 +86,8 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
     fn read_i32(&mut self) -> Result<i32, Error>;
 
     fn read_bool(&mut self) -> Result<bool, Error>;
+    fn read_bool16(&mut self) -> Result<bool, Error>;
+
     fn read_f32(&mut self) -> Result<f32, Error>;
     fn read_f64(&mut self) -> Result<f64, Error>;
 
@@ -104,6 +106,7 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
     /// Read a string with a u32 prefixed length from the reader
     fn read_string_u32(&mut self) -> Result<String, Error>;
 
+    fn read_color3(&mut self) -> Result<Color3, Error>;
     fn read_color4(&mut self) -> Result<Color4, Error>;
 
     fn read_vector2_f32(&mut self) -> Result<Vector2<f32>, Error>;
@@ -152,11 +155,11 @@ where
     }
 
     fn read_bool(&mut self) -> Result<bool, Error> {
-        let b = ReadRoseExt::read_u8(self)?;
-        match b {
-            0 => Ok(false),
-            _ => Ok(true),
-        }
+        Ok(ReadRoseExt::read_u8(self)? != 0)
+    }
+
+    fn read_bool16(&mut self) -> Result<bool, Error> {
+        Ok(ReadRoseExt::read_u16(self)? != 0)
     }
 
     fn read_f32(&mut self) -> Result<f32, Error> {
@@ -200,6 +203,14 @@ where
     fn read_string_u32(&mut self) -> Result<String, Error> {
         let length = ReadRoseExt::read_u32(self)?;
         self.read_string(u64::from(length))
+    }
+
+    fn read_color3(&mut self) -> Result<Color3, Error> {
+        let mut c = Color3::new();
+        c.r = ReadRoseExt::read_f32(self)?;
+        c.g = ReadRoseExt::read_f32(self)?;
+        c.b = ReadRoseExt::read_f32(self)?;
+        Ok(c)
     }
 
     fn read_color4(&mut self) -> Result<Color4, Error> {

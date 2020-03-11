@@ -3,6 +3,27 @@ use serde::{Deserialize, Serialize};
 pub type Quaternion = Vector4<f32>;
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq)]
+pub struct Color3 {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+}
+
+impl Color3 {
+    pub fn new() -> Color3 {
+        Self::default()
+    }
+
+    pub fn rgb(r: f32, g: f32, b: f32) -> Color3 {
+        let mut c = Color3::new();
+        c.r = r;
+        c.g = g;
+        c.b = b;
+        c
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct Color4 {
     pub r: f32,
     pub g: f32,
@@ -97,4 +118,10 @@ impl Vector4<i16> {
 pub struct BoundingBox<T> {
     pub min: Vector3<T>,
     pub max: Vector3<T>,
+}
+
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq)]
+pub struct BoundingCylinder {
+    pub center: Vector2<i32>,
+    pub radius: f32,
 }
