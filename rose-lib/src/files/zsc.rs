@@ -1,5 +1,6 @@
 //! ROSE Scene
 use std::convert::{Into, TryFrom, TryInto};
+use std::io::SeekFrom;
 use std::path::PathBuf;
 
 use failure::Error;
@@ -40,7 +41,7 @@ impl RoseFile for Scene {
             mat.alpha_enabled = reader.read_bool16()?;
             mat.two_sided = reader.read_bool16()?;
             mat.alpha_test_enabled = reader.read_bool16()?;
-            mat.alpha_ref_enabled = reader.read_bool16()?;
+            mat.alpha_ref = reader.read_u16()?;
             mat.z_write_enabled = reader.read_bool16()?;
             mat.z_test_enabled = reader.read_bool16()?;
             mat.blend_mode = SceneBlendMode::try_from(reader.read_u16()?)?;
@@ -50,6 +51,93 @@ impl RoseFile for Scene {
             mat.glow_color = reader.read_color3()?;
             self.materials.push(mat);
         }
+
+        let effects_count = reader.read_u16()?;
+        for _ in 0..effects_count {
+            let path = PathBuf::from(reader.read_cstring()?);
+            self.effects.push(path);
+        }
+
+        let object_count = reader.read_u16()?;
+        for _ in 0..object_count {
+            let mut object = SceneObject::default();
+            object.bounding_cylinder.radius = reader.read_u32()? as f32;
+            object.bounding_cylinder.center = reader.read_vector2_i32()?;
+
+            let part_count = reader.read_u16()?;
+            if part_count == 0 {
+                continue;
+            }
+
+            for _ in 0..part_count {
+                let mut part = SceneObjectPart::default();
+                part.mesh_id = reader.read_u16()?;
+                part.material_id = reader.read_u16()?;
+
+                loop {
+                    let flag = SceneObjectProperty::try_from(reader.read_u8()?)?;
+                    if flag == SceneObjectProperty::None {
+                        break;
+                    }
+                    let size = reader.read_u8()?;
+
+                    match flag {
+                        SceneObjectProperty::None => break,
+                        SceneObjectProperty::Position => part.position = reader.read_vector3_f32()?,
+                        SceneObjectProperty::Rotation => part.rotation = reader.read_quaternion_wxyz()?,
+                        SceneObjectProperty::Scale => part.scale = reader.read_vector3_f32()?,
+                        SceneObjectProperty::AxisRotation => part.axis_rotation = reader.read_quaternion_wxyz()?,
+                        SceneObjectProperty::BoneIndex => part.bone_index = reader.read_u16()?,
+                        SceneObjectProperty::DummyIndex => part.dummy_index = reader.read_u16()?,
+                        SceneObjectProperty::Parent => part.parent = reader.read_u16()?,
+                        //SceneObjectProperty::Collision => part.collision = SceneCollisionType::try_from(reader.read_u16()?)?,
+                        SceneObjectProperty::Collision => part.collision = reader.read_u16()?,
+                        SceneObjectProperty::AnimationPath => part.animation_path = PathBuf::from(reader.read_string(size as u64)?),
+                        SceneObjectProperty::Range => part.range = reader.read_u16()?,
+                        SceneObjectProperty::UseLightmap => part.use_lightmap = reader.read_bool16()?,
+                        SceneObjectProperty::Animation => {
+                            bail!("Animation scene object property found but no handler.")
+                        }
+                    }
+                }
+
+                object.parts.push(part);
+            }
+
+            let object_effect_count = reader.read_u16()?;
+            for _ in 0..object_effect_count {
+                let mut object_effect = SceneObjectEffect::default();
+                object_effect.effect_id = reader.read_u16()?;
+                object_effect.effect_type = SceneEffectType::try_from(reader.read_u16()?)?;
+
+                loop {
+                    let flag = SceneObjectProperty::try_from(reader.read_u8()?)?;
+                    if flag == SceneObjectProperty::None {
+                        break;
+                    }
+                    let size = reader.read_u8()?;
+
+                    match flag {
+                        SceneObjectProperty::None => break,
+                        SceneObjectProperty::Position => object_effect.position = reader.read_vector3_f32()?,
+                        SceneObjectProperty::Rotation => object_effect.rotation = reader.read_quaternion_wxyz()?,
+                        SceneObjectProperty::Scale => object_effect.scale = reader.read_vector3_f32()?,
+                        SceneObjectProperty::Parent => object_effect.parent = reader.read_u16()?,
+                        _ => {
+                            reader.seek(SeekFrom::Current(size as i64))?;
+                        }
+                    }
+                }
+
+                object.effects.push(object_effect);
+            }
+
+            object.bounding_box.min = reader.read_vector3_f32()?;
+            object.bounding_box.max = reader.read_vector3_f32()?;
+
+            self.objects.push(object);
+        }
+
         Ok(())
     }
 
@@ -66,7 +154,7 @@ impl RoseFile for Scene {
             writer.write_bool16(mat.alpha_enabled)?;
             writer.write_bool16(mat.two_sided)?;
             writer.write_bool16(mat.alpha_test_enabled)?;
-            writer.write_bool16(mat.alpha_ref_enabled)?;
+            writer.write_u16(mat.alpha_ref)?;
             writer.write_bool16(mat.z_write_enabled)?;
             writer.write_bool16(mat.z_test_enabled)?;
             writer.write_u16(mat.blend_mode.try_into()?)?;
@@ -76,8 +164,101 @@ impl RoseFile for Scene {
             writer.write_color3(&mat.glow_color)?;
         }
 
-        // TODO: Read effects
-        // TODO: Read objects
+        writer.write_u16(self.effects.len() as u16)?;
+        for effect_path in &self.effects {
+            writer.write_cstring(effect_path.to_str().unwrap())?;
+        }
+
+        writer.write_u16(self.objects.len() as u16)?;
+        for object in &self.objects {
+            writer.write_u32(object.bounding_cylinder.radius as u32)?;
+            writer.write_vector2_i32(&object.bounding_cylinder.center)?;
+
+            writer.write_u16(object.parts.len() as u16)?;
+            if object.parts.len() == 0 {
+                continue;
+            }
+
+            for part in &object.parts {
+                writer.write_u16(part.mesh_id)?;
+                writer.write_u16(part.material_id)?;
+
+                writer.write_u8(SceneObjectProperty::Position.into())?;
+                writer.write_u8(0)?;
+                writer.write_vector3_f32(&part.position)?;
+
+                writer.write_u8(SceneObjectProperty::Rotation.into())?;
+                writer.write_u8(0)?;
+                writer.write_quaternion_wxyz(&part.rotation)?;
+
+                writer.write_u8(SceneObjectProperty::Scale.into())?;
+                writer.write_u8(0)?;
+                writer.write_vector3_f32(&part.scale)?;
+
+                writer.write_u8(SceneObjectProperty::AxisRotation.into())?;
+                writer.write_u8(0)?;
+                writer.write_quaternion_wxyz(&part.axis_rotation)?;
+
+                writer.write_u8(SceneObjectProperty::BoneIndex.into())?;
+                writer.write_u8(0)?;
+                writer.write_u16(part.bone_index)?;
+
+                writer.write_u8(SceneObjectProperty::DummyIndex.into())?;
+                writer.write_u8(0)?;
+                writer.write_u16(part.dummy_index)?;
+
+                writer.write_u8(SceneObjectProperty::Parent.into())?;
+                writer.write_u8(0)?;
+                writer.write_u16(part.parent)?;
+
+                writer.write_u8(SceneObjectProperty::Collision.into())?;
+                writer.write_u8(0)?;
+                writer.write_u16(part.collision)?;
+
+                let path = part.animation_path.to_str().unwrap();
+                writer.write_u8(SceneObjectProperty::AnimationPath.into())?;
+                writer.write_u8(path.len() as u8)?;
+                writer.write_string(&path, path.len() as i32)?;
+
+                writer.write_u8(SceneObjectProperty::Range.into())?;
+                writer.write_u8(0)?;
+                writer.write_u16(part.range)?;
+
+                writer.write_u8(SceneObjectProperty::UseLightmap.into())?;
+                writer.write_u8(0)?;
+                writer.write_bool16(part.use_lightmap)?;
+
+                writer.write_u8(SceneObjectProperty::None.into())?;
+            }
+
+            writer.write_u16(object.effects.len() as u16)?;
+            for effect in &object.effects {
+                writer.write_u16(effect.effect_id)?;
+                writer.write_u16(effect.effect_type.into())?;
+
+                writer.write_u8(SceneObjectProperty::Position.into())?;
+                writer.write_u8(0)?;
+                writer.write_vector3_f32(&effect.position)?;
+
+                writer.write_u8(SceneObjectProperty::Rotation.into())?;
+                writer.write_u8(0)?;
+                writer.write_quaternion_wxyz(&effect.rotation)?;
+
+                writer.write_u8(SceneObjectProperty::Scale.into())?;
+                writer.write_u8(0)?;
+                writer.write_vector3_f32(&effect.scale)?;
+
+                writer.write_u8(SceneObjectProperty::Parent.into())?;
+                writer.write_u8(0)?;
+                writer.write_u16(effect.parent)?;
+
+                writer.write_u8(SceneObjectProperty::None.into())?;
+            }
+
+            writer.write_vector3_f32(&object.bounding_box.min)?;
+            writer.write_vector3_f32(&object.bounding_box.max)?;
+        }
+
 
         Ok(())
     }
@@ -91,7 +272,7 @@ pub struct SceneMaterial {
     pub alpha_enabled: bool,
     pub two_sided: bool,
     pub alpha_test_enabled: bool,
-    pub alpha_ref_enabled: bool,
+    pub alpha_ref: u16,
     pub z_write_enabled: bool,
     pub z_test_enabled: bool,
     pub blend_mode: SceneBlendMode,
@@ -113,29 +294,53 @@ pub struct SceneObject {
 /// Scene Object Part
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct SceneObjectPart {
-    mesh_id: i32,
-    material_id: i32,
+    mesh_id: u16,
+    material_id: u16,
     position: Vector3<f32>,
     rotation: Quaternion,
     scale: Vector3<f32>,
     axis_rotation: Quaternion,
-    bone_index: i16,
-    dummy_index: i16,
-    parent: i16,
-    collision: SceneCollisionType,
-    motion_path: PathBuf,
-    range: i16,
+    bone_index: u16,
+    dummy_index: u16,
+    parent: u16,
+    /*
+    TODO: Convert collision to an enum? (collision_info)
+
+    :ENUM[WORD] collision_type
+    NONE = 0
+    SPHERE = 1
+    AXISALIGNEDBOUNDINGBOX = 2
+    ORIENTEDBOUNDINGBOX = 3
+    POLYGON = 4
+    :ENDENUM
+
+    :ENUM[WORD] collisionpick_type
+        NONE = 0
+        NOTMOVABLE = 8
+        NOTPICKABLE = 16
+        HEIGHTONLY = 32
+        NOCAMERACOLLISION = 64
+    :ENDENUM
+
+    :TYPEDEF[WORD] collision_info
+        collision_type | collisionpick_type
+    */
+    collision: u16,
+    //collision: SceneCollisionType,
+    animation_path: PathBuf,
+    range: u16,
     use_lightmap: bool,
 }
 
 /// Scene Object Effect
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct SceneObjectEffect {
+    effect_id: u16,
+    effect_type: SceneEffectType,
     position: Vector3<f32>,
     rotation: Quaternion,
     scale: Vector3<f32>,
-    parent: i16,
-    data: Vec<u8>
+    parent: u16,
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
@@ -243,5 +448,125 @@ pub enum SceneCollisionType {
 impl Default for SceneCollisionType {
     fn default() -> Self {
         SceneCollisionType::None
+    }
+}
+
+impl TryFrom<u16> for SceneCollisionType {
+    type Error = failure::Error;
+
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(SceneCollisionType::None),
+            3 => Ok(SceneCollisionType::BoundingBox),
+            4 => Ok(SceneCollisionType::Polygon),
+            8 => Ok(SceneCollisionType::NotMovable),
+            16 => Ok(SceneCollisionType::NotPickable),
+            32 => Ok(SceneCollisionType::HeightOnly),
+            64 => Ok(SceneCollisionType::NoCameraCollision),
+            _ => bail!("Invalid SceneCollisionType: {}", value),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+pub enum  SceneObjectProperty {
+    None = 0,
+    Position = 1,
+    Rotation = 2,
+    Scale = 3,
+    AxisRotation = 4,
+    BoneIndex = 5,
+    DummyIndex = 6,
+    Parent = 7,
+    Animation = 8,
+    Collision = 29,
+    AnimationPath = 30,
+    Range = 31,
+    UseLightmap = 32,
+}
+
+impl Default for SceneObjectProperty {
+    fn default() -> Self {
+        SceneObjectProperty::None
+    }
+}
+
+impl Into<u8> for SceneObjectProperty {
+    fn into(self) -> u8 {
+        match self {
+            SceneObjectProperty::None => 0,
+            SceneObjectProperty::Position => 1,
+            SceneObjectProperty::Rotation => 2,
+            SceneObjectProperty::Scale => 3,
+            SceneObjectProperty::AxisRotation => 4,
+            SceneObjectProperty::BoneIndex => 5,
+            SceneObjectProperty::DummyIndex => 6,
+            SceneObjectProperty::Parent => 7,
+            SceneObjectProperty::Animation => 8,
+            SceneObjectProperty::Collision => 29,
+            SceneObjectProperty::AnimationPath => 30,
+            SceneObjectProperty::Range => 31,
+            SceneObjectProperty::UseLightmap => 32,
+        }
+    }
+}
+
+impl TryFrom<u8> for SceneObjectProperty {
+    type Error = failure::Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(SceneObjectProperty::None),
+            1 => Ok(SceneObjectProperty::Position),
+            2 => Ok(SceneObjectProperty::Rotation),
+            3 => Ok(SceneObjectProperty::Scale),
+            4 => Ok(SceneObjectProperty::AxisRotation),
+            5 => Ok(SceneObjectProperty::BoneIndex),
+            6 => Ok(SceneObjectProperty::DummyIndex),
+            7 => Ok(SceneObjectProperty::Parent),
+            8 => Ok(SceneObjectProperty::Animation),
+            29 => Ok(SceneObjectProperty::Collision),
+            30 => Ok(SceneObjectProperty::AnimationPath),
+            31 => Ok(SceneObjectProperty::Range),
+            32 => Ok(SceneObjectProperty::UseLightmap),
+            _ => {
+                bail!("Invalid SceneObjectProperty: {}", value);
+            }
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+pub enum  SceneEffectType {
+    Normal = 0,
+    DayNight = 1,
+    LightContainer = 2,
+}
+
+impl Default for SceneEffectType {
+    fn default() -> Self {
+        SceneEffectType::Normal
+    }
+}
+
+impl Into<u16> for SceneEffectType {
+    fn into(self) -> u16 {
+        match self {
+            SceneEffectType::Normal => 0,
+            SceneEffectType::DayNight => 1,
+            SceneEffectType::LightContainer => 2,
+        }
+    }
+}
+impl TryFrom<u16> for SceneEffectType {
+    type Error = failure::Error;
+
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(SceneEffectType::Normal),
+            1 => Ok(SceneEffectType::DayNight),
+            2 => Ok(SceneEffectType::LightContainer),
+            _ => bail!("Invalid SceneEffectType: {}", value),
+        }
     }
 }

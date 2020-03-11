@@ -97,6 +97,7 @@ pub trait WriteRoseExt: Write + Seek {
     fn write_color4(&mut self, color: &Color4) -> Result<(), Error>;
 
     fn write_vector2_f32(&mut self, v: &Vector2<f32>) -> Result<(), Error>;
+    fn write_vector2_i32(&mut self, v: &Vector2<i32>) -> Result<(), Error>;
     fn write_vector2_u32(&mut self, v: &Vector2<u32>) -> Result<(), Error>;
 
     fn write_vector3_f32(&mut self, v: &Vector3<f32>) -> Result<(), Error>;
@@ -222,6 +223,12 @@ where
     fn write_vector2_f32(&mut self, v: &Vector2<f32>) -> Result<(), Error> {
         WriteRoseExt::write_f32(self, v.x)?;
         WriteRoseExt::write_f32(self, v.y)?;
+        Ok(())
+    }
+
+    fn write_vector2_i32(&mut self, v: &Vector2<i32>) -> Result<(), Error> {
+        WriteRoseExt::write_i32(self, v.x)?;
+        WriteRoseExt::write_i32(self, v.y)?;
         Ok(())
     }
 

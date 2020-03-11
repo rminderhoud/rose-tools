@@ -19,15 +19,13 @@ fn read_zsc() {
     assert_eq!(zsc.meshes.len(), 862);
     assert_eq!(zsc.meshes[0], PathBuf::from(r#"3DData\\NPC\\animal\\larva\\larva1.ZMS"#));
 
-    dbg!(&zsc.materials[0]);
-
     assert_eq!(zsc.materials.len(), 862);
     assert_eq!(zsc.materials[0].path, PathBuf::from(r#"3DData\\NPC\\animal\\larva\\larva1.dds"#));
     assert_eq!(zsc.materials[0].is_skin, true);
     assert_eq!(zsc.materials[0].alpha_enabled, false);
     assert_eq!(zsc.materials[0].two_sided, false);
     assert_eq!(zsc.materials[0].alpha_test_enabled, true);
-    assert_eq!(zsc.materials[0].alpha_ref_enabled, true);
+    assert_eq!(zsc.materials[0].alpha_ref, 128);
     assert_eq!(zsc.materials[0].z_write_enabled, true);
     assert_eq!(zsc.materials[0].z_test_enabled, true);
     assert_eq!(zsc.materials[0].blend_mode, SceneBlendMode::None);
@@ -35,6 +33,9 @@ fn read_zsc() {
     assert_eq!(zsc.materials[0].alpha, 1.0);
     assert_eq!(zsc.materials[0].glow_type, SceneGlowType::None);
     assert_eq!(zsc.materials[0].glow_color, Color3::rgb(1.0, 1.0, 1.0));
+
+    assert_eq!(zsc.effects.len(), 0);
+    assert_eq!(zsc.objects.len(), 586);
 }
 
 #[test]
