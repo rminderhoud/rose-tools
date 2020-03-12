@@ -6,7 +6,7 @@ use std::path::Path;
 
 fn main() {
     let mut args: Vec<String> = std::env::args().skip(1).collect();
-    if args.len() <= 0 {
+    if args.len() <= 2 {
         println!("Usage: rose-info <command> <paths...>");
         println!("Commands: til_brushes, zon_brushes");
         ::std::process::exit(1);

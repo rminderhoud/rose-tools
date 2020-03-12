@@ -1,0 +1,8 @@
+[package]
+name = "rose-zsc-txt"
+version = "0.1.0"
+authors = ["Ralph Minderhoud <ralphminderhoud@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+roselib = { path = "../rose-lib" }

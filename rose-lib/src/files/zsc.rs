@@ -294,15 +294,15 @@ pub struct SceneObject {
 /// Scene Object Part
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct SceneObjectPart {
-    mesh_id: u16,
-    material_id: u16,
-    position: Vector3<f32>,
-    rotation: Quaternion,
-    scale: Vector3<f32>,
-    axis_rotation: Quaternion,
-    bone_index: u16,
-    dummy_index: u16,
-    parent: u16,
+    pub mesh_id: u16,
+    pub material_id: u16,
+    pub position: Vector3<f32>,
+    pub rotation: Quaternion,
+    pub scale: Vector3<f32>,
+    pub axis_rotation: Quaternion,
+    pub bone_index: u16,
+    pub dummy_index: u16,
+    pub parent: u16,
     /*
     TODO: Convert collision to an enum? (collision_info)
 
@@ -325,22 +325,22 @@ pub struct SceneObjectPart {
     :TYPEDEF[WORD] collision_info
         collision_type | collisionpick_type
     */
-    collision: u16,
+    pub collision: u16,
     //collision: SceneCollisionType,
-    animation_path: PathBuf,
-    range: u16,
-    use_lightmap: bool,
+    pub animation_path: PathBuf,
+    pub range: u16,
+    pub use_lightmap: bool,
 }
 
 /// Scene Object Effect
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct SceneObjectEffect {
-    effect_id: u16,
-    effect_type: SceneEffectType,
-    position: Vector3<f32>,
-    rotation: Quaternion,
-    scale: Vector3<f32>,
-    parent: u16,
+    pub effect_id: u16,
+    pub effect_type: SceneEffectType,
+    pub position: Vector3<f32>,
+    pub rotation: Quaternion,
+    pub scale: Vector3<f32>,
+    pub parent: u16,
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]

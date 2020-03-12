@@ -580,6 +580,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rose-zsc-txt"
+version = "0.1.0"
+dependencies = [
+ "roselib 0.1.0",
+]
+
+[[package]]
 name = "roselib"
 version = "0.1.0"
 dependencies = [
