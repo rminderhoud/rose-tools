@@ -16,8 +16,8 @@ use roselib::files::zon::ZoneTileRotation;
 use roselib::files::*;
 use roselib::io::{RoseFile, RoseReader};
 
-const SERIALIZE_VALUES: [&'static str; 6] = ["idx", "lit", "stb", "wstb", "til", "zon"];
-const DESERIALIZE_VALUES: [&'static str; 3] = ["idx", "lit", "stb"];
+const SERIALIZE_VALUES: [&'static str; 7] = ["idx", "lit", "stb", "wstb", "til", "zon", "zsc"];
+const DESERIALIZE_VALUES: [&'static str; 4] = ["idx", "lit", "stb", "zsc"];
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TilemapTile {
@@ -157,7 +157,7 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         .to_lowercase();
 
     let rose_type = if input_type.is_empty() {
-        if SERIALIZE_VALUES.contains(&extension.as_str()) {
+        if !SERIALIZE_VALUES.contains(&extension.as_str()) {
             bail!("No type provided and unrecognized extension");
         }
         String::from(&extension)
@@ -197,6 +197,7 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         "lit" => rose_to_json::<LIT>(&input)?,
         "til" => rose_to_json::<TIL>(&input)?,
         "zon" => rose_to_json::<ZON>(&input)?,
+        "zsc" => rose_to_json::<ZSC>(&input)?,
         _ => bail!("Unsupported file type: {}", extension),
     };
 
@@ -243,6 +244,7 @@ fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
     match filetype {
         "idx" => json_to_rose::<IDX>(&input)?.write_to_path(&out)?,
         "lit" => json_to_rose::<LIT>(&input)?.write_to_path(&out)?,
+        "zsc" => json_to_rose::<ZSC>(&input)?.write_to_path(&out)?,
         _ => bail!("Unsupported file type: {}", filetype),
     }
 
