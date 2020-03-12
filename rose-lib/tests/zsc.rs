@@ -36,6 +36,31 @@ fn read_zsc() {
 
     assert_eq!(zsc.effects.len(), 0);
     assert_eq!(zsc.objects.len(), 586);
+
+    // Test file with weird effect values
+    let file2 = root.join("list_weapon.zsc");
+    let zsc2 = ZSC::from_path(&file2).unwrap();
+
+    assert_eq!(zsc2.meshes.len(), 2064);
+    assert_eq!(zsc2.meshes[0], PathBuf::from(r#"3Ddata/WEAPON/WEAPON/onehand/osw15/osw15.zms"#));
+
+    assert_eq!(zsc2.materials.len(), 2064);
+    assert_eq!(zsc2.materials[0].path, PathBuf::from(r#"3Ddata/WEAPON/WEAPON/onehand/osw15/osw15.dds"#));
+    assert_eq!(zsc2.materials[0].is_skin, false);
+    assert_eq!(zsc2.materials[0].alpha_enabled, false);
+    assert_eq!(zsc2.materials[0].two_sided, false);
+    assert_eq!(zsc2.materials[0].alpha_test_enabled, true);
+    assert_eq!(zsc2.materials[0].alpha_ref, 128);
+    assert_eq!(zsc2.materials[0].z_write_enabled, true);
+    assert_eq!(zsc2.materials[0].z_test_enabled, true);
+    assert_eq!(zsc2.materials[0].blend_mode, SceneBlendMode::None);
+    assert_eq!(zsc2.materials[0].specular_enabled, false);
+    assert_eq!(zsc2.materials[0].alpha, 1.0);
+    assert_eq!(zsc2.materials[0].glow_type, SceneGlowType::None);
+    assert_eq!(zsc2.materials[0].glow_color, Color3::rgb(1.0, 1.0, 1.0));
+
+    assert_eq!(zsc2.effects.len(), 0);
+    assert_eq!(zsc2.objects.len(), 586);
 }
 
 #[test]

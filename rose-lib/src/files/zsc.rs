@@ -107,6 +107,7 @@ impl RoseFile for Scene {
             let object_effect_count = reader.read_u16()?;
             for _ in 0..object_effect_count {
                 let mut object_effect = SceneObjectEffect::default();
+
                 object_effect.effect_id = reader.read_u16()?;
                 object_effect.effect_type = SceneEffectType::try_from(reader.read_u16()?)?;
 
@@ -566,7 +567,7 @@ impl TryFrom<u16> for SceneEffectType {
             0 => Ok(SceneEffectType::Normal),
             1 => Ok(SceneEffectType::DayNight),
             2 => Ok(SceneEffectType::LightContainer),
-            _ => bail!("Invalid SceneEffectType: {}", value),
+            _ => Ok(SceneEffectType::Normal),
         }
     }
 }
