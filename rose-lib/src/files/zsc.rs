@@ -66,6 +66,7 @@ impl RoseFile for Scene {
 
             let part_count = reader.read_u16()?;
             if part_count == 0 {
+                self.objects.push(object);
                 continue;
             }
 
