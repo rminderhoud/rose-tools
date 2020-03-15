@@ -127,7 +127,7 @@ fn main() -> Result<(), ::std::io::Error> {
                 PathBuf::from(&zsc.effects[effect.effect_id as usize])
             };
 
-            writeln!(f, "point {}", effect_idx)?;
+            writeln!(f, "point {}", effect_idx + 1)?;
             writeln!(f, "\teffect {}", effect_path.to_string_lossy())?;
             writeln!(f, "\ttype {}", effect.effect_id)?;
             writeln!(f, "\tparent {}", effect.parent)?;
