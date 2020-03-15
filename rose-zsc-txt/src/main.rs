@@ -43,8 +43,8 @@ fn main() -> Result<(), ::std::io::Error> {
         Err(e) => return bail(&format!("Failed to read ZSC file: {}", e)),
     };
 
-    let stb_col = if args.len() > 3 {
-        args[2].parse::<i32>().unwrap_or(3) - 1
+    let stb_col = if args.len() >= 3 {
+        args[2].parse::<i32>().unwrap_or(1) + 1
     } else {
         2
     };
@@ -115,7 +115,7 @@ fn main() -> Result<(), ::std::io::Error> {
                 part.scale.x, part.scale.y, part.scale.z
             )?;
             writeln!(f, "\tcollision {}", part.collision)?;
-            writeln!(f, "\tuselightmap {}", part.use_lightmap)?;
+            writeln!(f, "\tuselightmap {}", part.use_lightmap as u32)?;
             writeln!(f, "\trangeset {}", part.range)?;
         }
 
