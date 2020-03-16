@@ -70,14 +70,14 @@ fn main() -> Result<(), ::std::io::Error> {
         let out_file = PathBuf::from(&txt_file);
         create_dir_all(out_file.parent().unwrap_or(&PathBuf::new())).unwrap();
 
-        let mut f = File::create(out_file).unwrap();
+        let mut buf = Vec::new();
 
         if object_idx >= zsc.objects.len() {
             continue;
         }
         let zsc_obj = &zsc.objects[object_idx];
 
-        writeln!(f, "numObj {}", zsc_obj.parts.len())?;
+        writeln!(buf, "numObj {}", zsc_obj.parts.len())?;
         for (part_idx, part) in zsc_obj.parts.iter().enumerate() {
             let mesh = if part.mesh_id as usize >= zsc.meshes.len() {
                 PathBuf::from("")
@@ -92,34 +92,34 @@ fn main() -> Result<(), ::std::io::Error> {
                 &zsc.materials[part.material_id as usize]
             };
 
-            writeln!(f, "obj {}", part_idx + 1)?;
-            writeln!(f, "\tmesh {}", mesh.to_string_lossy())?;
-            writeln!(f, "\tmat {}", mat.path.to_string_lossy())?;
-            writeln!(f, "\tisskin {}", mat.is_skin as u32)?;
-            writeln!(f, "\talpha  {}", mat.alpha_enabled as u32)?;
-            writeln!(f, "\ttwoside {}", mat.two_sided as u32)?;
-            writeln!(f, "\tparent {}", part.parent)?;
+            writeln!(buf, "obj {}", part_idx + 1)?;
+            writeln!(buf, "\tmesh {}", mesh.to_string_lossy())?;
+            writeln!(buf, "\tmat {}", mat.path.to_string_lossy())?;
+            writeln!(buf, "\tisskin {}", mat.is_skin as u32)?;
+            writeln!(buf, "\talpha  {}", mat.alpha_enabled as u32)?;
+            writeln!(buf, "\ttwoside {}", mat.two_sided as u32)?;
+            writeln!(buf, "\tparent {}", part.parent)?;
             writeln!(
-                f,
+                buf,
                 "\tpos {} {} {}",
                 part.position.x, part.position.y, part.position.z
             )?;
             writeln!(
-                f,
+                buf,
                 "\trot {} {} {} {}",
                 part.rotation.w, part.rotation.x, part.rotation.y, part.rotation.z
             )?;
             writeln!(
-                f,
+                buf,
                 "\tscale {} {} {}",
                 part.scale.x, part.scale.y, part.scale.z
             )?;
-            writeln!(f, "\tcollision {}", part.collision)?;
-            writeln!(f, "\tuselightmap {}", part.use_lightmap as u32)?;
-            writeln!(f, "\trangeset {}", part.range)?;
+            writeln!(buf, "\tcollision {}", part.collision)?;
+            writeln!(buf, "\tuselightmap {}", part.use_lightmap as u32)?;
+            writeln!(buf, "\trangeset {}", part.range)?;
         }
 
-        writeln!(f, "numpoint {}", zsc_obj.effects.len())?;
+        writeln!(buf, "numpoint {}", zsc_obj.effects.len())?;
         for (effect_idx, effect) in zsc_obj.effects.iter().enumerate() {
             let effect_path = if effect.effect_id as usize >= zsc.effects.len() {
                 PathBuf::from("")
@@ -127,26 +127,36 @@ fn main() -> Result<(), ::std::io::Error> {
                 PathBuf::from(&zsc.effects[effect.effect_id as usize])
             };
 
-            writeln!(f, "point {}", effect_idx + 1)?;
-            writeln!(f, "\teffect {}", effect_path.to_string_lossy())?;
-            writeln!(f, "\ttype {}", effect.effect_id)?;
-            writeln!(f, "\tparent {}", effect.parent)?;
+            writeln!(buf, "point {}", effect_idx + 1)?;
+            writeln!(buf, "\teffect {}", effect_path.to_string_lossy())?;
+            if effect.effect_id == 65535 {
+                writeln!(buf, "\ttype {}", 0)?;
+            } else {
+                writeln!(buf, "\ttype {}", effect.effect_id)?;
+            }
+            writeln!(buf, "\tparent {}", effect.parent)?;
             writeln!(
-                f,
+                buf,
                 "\tpos {} {} {}",
                 effect.position.x, effect.position.y, effect.position.z
             )?;
             writeln!(
-                f,
+                buf,
                 "\trot {} {} {} {}",
                 effect.rotation.w, effect.rotation.x, effect.rotation.y, effect.rotation.z
             )?;
             writeln!(
-                f,
+                buf,
                 "\tscale {} {} {}",
                 effect.scale.x, effect.scale.y, effect.scale.z
             )?;
         }
+
+        let mut s = String::from_utf8(buf).unwrap();
+        s = s.replace("\n", "\r\n");
+
+        let mut f = File::create(out_file).unwrap();
+        f.write_all(s.as_bytes()).unwrap();
     }
 
     Ok(())
