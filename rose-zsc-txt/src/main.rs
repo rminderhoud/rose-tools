@@ -57,6 +57,9 @@ fn main() -> Result<(), ::std::io::Error> {
         ))?;
     }
 
+    let use_bonenumber = args.iter().map(|x| x.to_lowercase()).collect::<Vec<String>>().contains(&String::from("bonenumber"));
+    let use_linkdummy = args.iter().map(|x| x.to_lowercase()).collect::<Vec<String>>().contains(&String::from("linkdummy"));
+
     for (object_idx, stb_row) in stb.data.iter().enumerate() {
         let txt_file = &stb_row[stb_col as usize];
         if txt_file.is_empty() {
@@ -99,6 +102,12 @@ fn main() -> Result<(), ::std::io::Error> {
             writeln!(buf, "\talpha  {}", mat.alpha_enabled as u32)?;
             writeln!(buf, "\ttwoside {}", mat.two_sided as u32)?;
             writeln!(buf, "\tparent {}", part.parent)?;
+            if use_bonenumber {
+                writeln!(buf, "\tbonenumber {}", part.bone_index)?;
+            }
+            if use_linkdummy {
+                writeln!(buf, "\tlinkdummy {}", part.dummy_index)?;
+            }
             writeln!(
                 buf,
                 "\tpos {} {} {}",
@@ -117,6 +126,9 @@ fn main() -> Result<(), ::std::io::Error> {
             writeln!(buf, "\tcollision {}", part.collision)?;
             writeln!(buf, "\tuselightmap {}", part.use_lightmap as u32)?;
             writeln!(buf, "\trangeset {}", part.range)?;
+            if !part.animation_path.to_string_lossy().is_empty() {
+                writeln!(buf, "\tanim {}", part.animation_path.to_string_lossy())?;
+            }
         }
 
         writeln!(buf, "numpoint {}", zsc_obj.effects.len())?;
