@@ -88,8 +88,8 @@ impl RoseFile for Scene {
                         SceneObjectProperty::Rotation => part.rotation = reader.read_quaternion_wxyz()?,
                         SceneObjectProperty::Scale => part.scale = reader.read_vector3_f32()?,
                         SceneObjectProperty::AxisRotation => part.axis_rotation = reader.read_quaternion_wxyz()?,
-                        SceneObjectProperty::BoneIndex => part.bone_index = reader.read_u16()?,
-                        SceneObjectProperty::DummyIndex => part.dummy_index = reader.read_u16()?,
+                        SceneObjectProperty::BoneIndex => part.bone_index = reader.read_i16()?,
+                        SceneObjectProperty::DummyIndex => part.dummy_index = reader.read_i16()?,
                         SceneObjectProperty::Parent => part.parent = reader.read_u16()?,
                         //SceneObjectProperty::Collision => part.collision = SceneCollisionType::try_from(reader.read_u16()?)?,
                         SceneObjectProperty::Collision => part.collision = reader.read_u16()?,
@@ -203,11 +203,11 @@ impl RoseFile for Scene {
 
                 writer.write_u8(SceneObjectProperty::BoneIndex.into())?;
                 writer.write_u8(0)?;
-                writer.write_u16(part.bone_index)?;
+                writer.write_i16(part.bone_index)?;
 
                 writer.write_u8(SceneObjectProperty::DummyIndex.into())?;
                 writer.write_u8(0)?;
-                writer.write_u16(part.dummy_index)?;
+                writer.write_i16(part.dummy_index)?;
 
                 writer.write_u8(SceneObjectProperty::Parent.into())?;
                 writer.write_u8(0)?;
@@ -294,7 +294,7 @@ pub struct SceneObject {
 }
 
 /// Scene Object Part
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct SceneObjectPart {
     pub mesh_id: u16,
     pub material_id: u16,
@@ -302,8 +302,8 @@ pub struct SceneObjectPart {
     pub rotation: Quaternion,
     pub scale: Vector3<f32>,
     pub axis_rotation: Quaternion,
-    pub bone_index: u16,
-    pub dummy_index: u16,
+    pub bone_index: i16,
+    pub dummy_index: i16,
     pub parent: u16,
     /*
     TODO: Convert collision to an enum? (collision_info)
@@ -332,6 +332,27 @@ pub struct SceneObjectPart {
     pub animation_path: PathBuf,
     pub range: u16,
     pub use_lightmap: bool,
+}
+
+impl Default for SceneObjectPart {
+    fn default() -> SceneObjectPart {
+        SceneObjectPart {
+            mesh_id: 0,
+            material_id: 0,
+            position: Vector3::default(),
+            rotation: Quaternion::default(),
+            scale: Vector3::default(),
+            axis_rotation: Quaternion::default(),
+            bone_index: -1,
+            dummy_index: -1,
+            parent: 0,
+            collision: 0,
+            //collision: SceneCollisionType,
+            animation_path: PathBuf::new(),
+            range: 0,
+            use_lightmap: false,
+        }
+    }
 }
 
 /// Scene Object Effect

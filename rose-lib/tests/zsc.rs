@@ -35,7 +35,7 @@ fn read_zsc() {
     assert_eq!(zsc.materials[0].glow_color, Color3::rgb(1.0, 1.0, 1.0));
 
     assert_eq!(zsc.effects.len(), 0);
-    assert_eq!(zsc.objects.len(), 586);
+    assert_eq!(zsc.objects.len(), 697);
 
     // Test file with weird effect values
     let file2 = root.join("list_weapon.zsc");
@@ -60,7 +60,7 @@ fn read_zsc() {
     assert_eq!(zsc2.materials[0].glow_color, Color3::rgb(1.0, 1.0, 1.0));
 
     assert_eq!(zsc2.effects.len(), 0);
-    assert_eq!(zsc2.objects.len(), 586);
+    assert_eq!(zsc2.objects.len(), 6001);
 }
 
 #[test]
