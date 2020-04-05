@@ -10,3 +10,5 @@ pub mod files;
 pub mod io;
 pub mod sqlite;
 pub mod utils;
+
+pub use failure::Error;
