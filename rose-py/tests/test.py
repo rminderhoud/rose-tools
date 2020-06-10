@@ -26,7 +26,7 @@ class RoseTests(unittest.TestCase):
             self.assertEqual(len(patch), 16)
 
         self.assertEqual(len(h.quad_patches), 85)
-    
+
     def test_til(self):
         til_file = os.path.join(DATA_DIR, "30_30.TIL")
         t = Til(til_file)
@@ -41,13 +41,13 @@ class RoseTests(unittest.TestCase):
     def test_zon(self):
         zon_file = os.path.join(DATA_DIR, "JPT01.ZON")
         z = Zon(zon_file)
-        
+
         self.assertEqual(z.zone_type, ZoneType.BoatVillage)
         self.assertEqual(z.width, 64)
         self.assertEqual(z.length, 64)
         self.assertEqual(z.grid_count, 4)
         self.assertEqual(z.grid_size, 250.0)
-        
+
         self.assertEqual(len(z.positions), 64)
         for pos in z.positions:
             self.assertEqual(len(pos), 64)
@@ -55,7 +55,7 @@ class RoseTests(unittest.TestCase):
         self.assertEqual(len(z.spawns), 6)
         self.assertEqual(len(z.textures), 49)
         self.assertEqual(len(z.tiles), 224)
-        
+
         self.assertEqual(z.name, "0")
         self.assertEqual(z.is_underground, False)
         self.assertEqual(z.background_music_path, "button1")
@@ -73,3 +73,7 @@ class RoseTests(unittest.TestCase):
         self.assertEqual(z.industrial_consumption, 10)
         self.assertEqual(z.medicine_consumption, 5)
         self.assertEqual(z.food_consumption, 10)
+
+
+if __name__ == "__main__":
+    unittest.main()

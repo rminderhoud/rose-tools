@@ -1,3 +1,5 @@
+* text eol=lf
+
 *.[Gg][Ii][Ff] filter=lfs diff=lfs merge=lfs -text
 *.[Pp][Nn][Gg] filter=lfs diff=lfs merge=lfs -text
 

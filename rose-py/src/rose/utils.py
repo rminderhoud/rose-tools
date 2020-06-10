@@ -1,6 +1,5 @@
 import struct
 
-
 def list_2d(width, length, default=None):
     """ Create a 2-dimensional list of width x length """
     return [[default] * width for i in range(length)]
@@ -18,6 +17,21 @@ class Vector3:
         self.x = 0
         self.y = 0
         self.z = 0
+
+    def __repr__(self):
+        return f"Vector3({self.x}, {self.y}, {self.z}"
+
+class Color4:
+    def __init__(self):
+        self.r = 0
+        self.g = 0
+        self.b = 0
+        self.a = 0
+
+class BoundingBox:
+    def __init__(self):
+        self.min = Vector3()
+        self.max = Vector3()
 
 def read_i8(f):
     return struct.unpack("b", f.read(1))[0]
@@ -70,3 +84,14 @@ def read_str(f):
 def read_fstr(f, size):
     """ Read fixed-size string """
     return f.read(size).decode("EUC-KR")
+
+def read_vector3_f32(f):
+    """ Read vector3 of floats """
+    v = Vector3()
+    v.x = read_f32(f)
+    v.y = read_f32(f)
+    v.z = read_f32(f)
+    return v
+
+class RoseParseError(Exception):
+    ...

@@ -1,9 +1,13 @@
 # Tools Dirs
 target/
 out/
+.vscode/
 *.swp
 *.pyc
 
 # GODOT
 .import/
 *.import
+
+# Python/Poetry
+*.egg-info/
