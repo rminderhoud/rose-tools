@@ -1,15 +1,18 @@
 import os
 import unittest
+
 from rose.him import *
 from rose.til import *
+from rose.zms import *
 from rose.zon import *
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(DIR, "data")
 
+
 class RoseTests(unittest.TestCase):
     def test_him(self):
-        him_file = os.path.join(DATA_DIR, "30_30.HIM")
+        him_file = os.path.join(DATA_DIR, "30_30.him")
         h = Him(him_file)
 
         self.assertEqual(h.width, 65)
@@ -28,7 +31,7 @@ class RoseTests(unittest.TestCase):
         self.assertEqual(len(h.quad_patches), 85)
 
     def test_til(self):
-        til_file = os.path.join(DATA_DIR, "30_30.TIL")
+        til_file = os.path.join(DATA_DIR, "30_30.til")
         t = Til(til_file)
 
         self.assertEqual(t.width, 16)
@@ -38,8 +41,79 @@ class RoseTests(unittest.TestCase):
         for patch in t.tiles:
             self.assertEqual(len(patch), 16)
 
+    def test_zms(self):
+        zms_file1 = os.path.join(DATA_DIR, "headbad01.zms")
+        zms_file2 = os.path.join(DATA_DIR, "stone014.zms")
+        zms_file3 = os.path.join(DATA_DIR, "cart01_ability01.zms")
+
+        zms1 = ZMS()
+        zms1.load(zms_file1)
+
+        self.assertEqual(zms1.identifier, "ZMS0008")
+        self.assertEqual(zms1.format, 182)
+        self.assertEqual(zms1.positions_enabled(), True)
+        self.assertEqual(zms1.normals_enabled(), True)
+        self.assertEqual(zms1.colors_enabled(), False)
+        self.assertEqual(zms1.bones_enabled(), True)
+        self.assertEqual(zms1.tangents_enabled(), False)
+        self.assertEqual(zms1.uv1_enabled(), True)
+        self.assertEqual(zms1.uv2_enabled(), False)
+        self.assertEqual(zms1.uv3_enabled(), False)
+        self.assertEqual(zms1.uv4_enabled(), False)
+
+        self.assertEqual(len(zms1.bones), 8)
+        self.assertEqual(len(zms1.vertices), 336)
+        self.assertEqual(len(zms1.indices), 578)
+        self.assertEqual(len(zms1.materials), 6)
+        self.assertEqual(len(zms1.strips), 0)
+        self.assertEqual(zms1.pool, 0)
+
+        zms2 = ZMS()
+        zms2.load(zms_file2)
+
+        self.assertEqual(zms2.identifier, "ZMS0007")
+        self.assertEqual(zms2.format, 390)
+        self.assertEqual(zms2.positions_enabled(), True)
+        self.assertEqual(zms2.normals_enabled(), True)
+        self.assertEqual(zms2.colors_enabled(), False)
+        self.assertEqual(zms2.bones_enabled(), False)
+        self.assertEqual(zms2.tangents_enabled(), False)
+        self.assertEqual(zms2.uv1_enabled(), True)
+        self.assertEqual(zms2.uv2_enabled(), True)
+        self.assertEqual(zms2.uv3_enabled(), False)
+        self.assertEqual(zms2.uv4_enabled(), False)
+
+        self.assertEqual(len(zms2.bones), 0)
+        self.assertEqual(len(zms2.vertices), 131)
+        self.assertEqual(len(zms2.indices), 128)
+        self.assertEqual(len(zms2.materials), 0)
+        self.assertEqual(len(zms2.strips), 0)
+        self.assertEqual(zms2.pool, 0)
+
+        zms3 = ZMS()
+        zms3.load(zms_file3)
+
+        self.assertEqual(zms3.identifier, "ZMS0008")
+        self.assertEqual(zms3.format, 134)
+        self.assertEqual(zms3.positions_enabled(), True)
+        self.assertEqual(zms3.normals_enabled(), True)
+        self.assertEqual(zms3.colors_enabled(), False)
+        self.assertEqual(zms3.bones_enabled(), False)
+        self.assertEqual(zms3.tangents_enabled(), False)
+        self.assertEqual(zms3.uv1_enabled(), True)
+        self.assertEqual(zms3.uv2_enabled(), False)
+        self.assertEqual(zms3.uv3_enabled(), False)
+        self.assertEqual(zms3.uv4_enabled(), False)
+
+        self.assertEqual(len(zms3.bones), 0)
+        self.assertEqual(len(zms3.vertices), 544)
+        self.assertEqual(len(zms3.indices), 532)
+        self.assertEqual(len(zms3.materials), 2)
+        self.assertEqual(len(zms3.strips), 0)
+        self.assertEqual(zms3.pool, 0)
+
     def test_zon(self):
-        zon_file = os.path.join(DATA_DIR, "JPT01.ZON")
+        zon_file = os.path.join(DATA_DIR, "jpt01.zon")
         z = Zon(zon_file)
 
         self.assertEqual(z.zone_type, ZoneType.BoatVillage)

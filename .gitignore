@@ -3,7 +3,6 @@ target/
 out/
 .vscode/
 *.swp
-*.pyc
 
 # GODOT
 .import/
@@ -11,3 +10,5 @@ out/
 
 # Python/Poetry
 *.egg-info/
+poetry.lock
+*.pyc
