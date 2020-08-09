@@ -2,11 +2,11 @@ use roselib::files::TIL;
 use roselib::files::ZON;
 use roselib::io::RoseFile;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 fn main() {
     let mut args: Vec<String> = std::env::args().skip(1).collect();
-    if args.len() <= 2 {
+    if args.len() < 2 {
         println!("Usage: rose-info <command> <paths...>");
         println!("Commands: til_brushes, zon_brushes");
         ::std::process::exit(1);
@@ -25,7 +25,7 @@ fn main() {
 fn til_brush_info(paths: &[String]) {
     let mut map_brushes: HashMap<&Path, Vec<u8>> = HashMap::new();
 
-    let mut max_map_path = "";
+    let mut max_map_path = PathBuf::new();
     let mut max_map_brush_count = 0;
 
     for til_path in paths {
@@ -42,6 +42,7 @@ fn til_brush_info(paths: &[String]) {
                 } else {
                     map_brushes.insert(til_parent, vec![tile.brush_id]);
                 }
+
             }
         }
     }
@@ -52,19 +53,19 @@ fn til_brush_info(paths: &[String]) {
         let brush_count = brushes.len();
         if brush_count > max_map_brush_count {
             max_map_brush_count = brush_count;
-            max_map_path = map_path.to_str().unwrap();
+            max_map_path = map_path.to_path_buf();
         }
 
         println!(
-            "{} brushes used in {}",
+            "{} unique brushes used in {}",
             brush_count,
-            map_path.to_str().unwrap()
+            map_path.display()
         );
     }
 
     println!(
-        "MAX: {} brushes used in {}",
-        max_map_brush_count, max_map_path,
+        "MAX: {} unique brushes used in {}",
+        max_map_brush_count, max_map_path.display(),
     );
 }
 
