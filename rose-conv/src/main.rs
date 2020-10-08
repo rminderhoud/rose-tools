@@ -129,7 +129,7 @@ where
     F: RoseFile,
     F: Serialize,
 {
-    Ok(serde_json::to_string(&F::from_path(&path)?)?)
+    Ok(serde_json::to_string_pretty(&F::from_path(&path)?)?)
 }
 
 fn json_to_rose<F>(path: &Path) -> Result<F, Error>
