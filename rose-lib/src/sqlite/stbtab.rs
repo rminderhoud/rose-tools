@@ -31,7 +31,14 @@ lazy_static! {
 /// );
 /// ```
 ///
-/// ```norun
+/// ```rust,no_run
+/// use rusqlite::{params, Connection, NO_PARAMS};
+/// use std::path::PathBuf;
+///
+/// use roselib::files::STB;
+/// use roselib::io::RoseFile;
+/// use roselib::sqlite::stbtab;
+///
 /// let db = Connection::open_in_memory().unwrap();
 /// stbtab::load_module(&db).unwrap();
 ///
@@ -292,7 +299,7 @@ impl VTabCursor for STBTabCursor {
 
 #[cfg(test)]
 mod test {
-    use rusqlite::{params, Connection, Error, NO_PARAMS};
+    use rusqlite::{params, Connection, NO_PARAMS};
     use std::path::PathBuf;
 
     use crate::files::STB;
@@ -355,7 +362,7 @@ mod test {
         db.execute_batch(query).unwrap();
         {
             for row_idx in 0..stb.rows() {
-                let row = db.query_row(
+                let _ = db.query_row(
                     "SELECT row_idx, * FROM list_zone WHERE rowid = ?",
                     params![row_idx as u32],
                     |row| {

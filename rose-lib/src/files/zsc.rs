@@ -84,18 +84,28 @@ impl RoseFile for Scene {
 
                     match flag {
                         SceneObjectProperty::None => break,
-                        SceneObjectProperty::Position => part.position = reader.read_vector3_f32()?,
-                        SceneObjectProperty::Rotation => part.rotation = reader.read_quaternion_wxyz()?,
+                        SceneObjectProperty::Position => {
+                            part.position = reader.read_vector3_f32()?
+                        }
+                        SceneObjectProperty::Rotation => {
+                            part.rotation = reader.read_quaternion_wxyz()?
+                        }
                         SceneObjectProperty::Scale => part.scale = reader.read_vector3_f32()?,
-                        SceneObjectProperty::AxisRotation => part.axis_rotation = reader.read_quaternion_wxyz()?,
+                        SceneObjectProperty::AxisRotation => {
+                            part.axis_rotation = reader.read_quaternion_wxyz()?
+                        }
                         SceneObjectProperty::BoneIndex => part.bone_index = reader.read_i16()?,
                         SceneObjectProperty::DummyIndex => part.dummy_index = reader.read_i16()?,
                         SceneObjectProperty::Parent => part.parent = reader.read_u16()?,
                         //SceneObjectProperty::Collision => part.collision = SceneCollisionType::try_from(reader.read_u16()?)?,
                         SceneObjectProperty::Collision => part.collision = reader.read_u16()?,
-                        SceneObjectProperty::AnimationPath => part.animation_path = PathBuf::from(reader.read_string(size as u64)?),
+                        SceneObjectProperty::AnimationPath => {
+                            part.animation_path = PathBuf::from(reader.read_string(size as u64)?)
+                        }
                         SceneObjectProperty::Range => part.range = reader.read_u16()?,
-                        SceneObjectProperty::UseLightmap => part.use_lightmap = reader.read_bool16()?,
+                        SceneObjectProperty::UseLightmap => {
+                            part.use_lightmap = reader.read_bool16()?
+                        }
                         SceneObjectProperty::Animation => {
                             bail!("Animation scene object property found but no handler.")
                         }
@@ -121,9 +131,15 @@ impl RoseFile for Scene {
 
                     match flag {
                         SceneObjectProperty::None => break,
-                        SceneObjectProperty::Position => object_effect.position = reader.read_vector3_f32()?,
-                        SceneObjectProperty::Rotation => object_effect.rotation = reader.read_quaternion_wxyz()?,
-                        SceneObjectProperty::Scale => object_effect.scale = reader.read_vector3_f32()?,
+                        SceneObjectProperty::Position => {
+                            object_effect.position = reader.read_vector3_f32()?
+                        }
+                        SceneObjectProperty::Rotation => {
+                            object_effect.rotation = reader.read_quaternion_wxyz()?
+                        }
+                        SceneObjectProperty::Scale => {
+                            object_effect.scale = reader.read_vector3_f32()?
+                        }
                         SceneObjectProperty::Parent => object_effect.parent = reader.read_u16()?,
                         _ => {
                             reader.seek(SeekFrom::Current(size as i64))?;
@@ -186,35 +202,35 @@ impl RoseFile for Scene {
                 writer.write_u16(part.material_id)?;
 
                 writer.write_u8(SceneObjectProperty::Position.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(12)?;
                 writer.write_vector3_f32(&part.position)?;
 
                 writer.write_u8(SceneObjectProperty::Rotation.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(16)?;
                 writer.write_quaternion_wxyz(&part.rotation)?;
 
                 writer.write_u8(SceneObjectProperty::Scale.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(12)?;
                 writer.write_vector3_f32(&part.scale)?;
 
                 writer.write_u8(SceneObjectProperty::AxisRotation.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(16)?;
                 writer.write_quaternion_wxyz(&part.axis_rotation)?;
 
                 writer.write_u8(SceneObjectProperty::BoneIndex.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(2)?;
                 writer.write_i16(part.bone_index)?;
 
                 writer.write_u8(SceneObjectProperty::DummyIndex.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(2)?;
                 writer.write_i16(part.dummy_index)?;
 
                 writer.write_u8(SceneObjectProperty::Parent.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(2)?;
                 writer.write_u16(part.parent)?;
 
                 writer.write_u8(SceneObjectProperty::Collision.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(2)?;
                 writer.write_u16(part.collision)?;
 
                 let path = part.animation_path.to_str().unwrap();
@@ -223,11 +239,11 @@ impl RoseFile for Scene {
                 writer.write_string(&path, path.len() as i32)?;
 
                 writer.write_u8(SceneObjectProperty::Range.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(2)?;
                 writer.write_u16(part.range)?;
 
                 writer.write_u8(SceneObjectProperty::UseLightmap.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(2)?;
                 writer.write_bool16(part.use_lightmap)?;
 
                 writer.write_u8(SceneObjectProperty::None.into())?;
@@ -239,19 +255,19 @@ impl RoseFile for Scene {
                 writer.write_u16(effect.effect_type.into())?;
 
                 writer.write_u8(SceneObjectProperty::Position.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(12)?;
                 writer.write_vector3_f32(&effect.position)?;
 
                 writer.write_u8(SceneObjectProperty::Rotation.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(16)?;
                 writer.write_quaternion_wxyz(&effect.rotation)?;
 
                 writer.write_u8(SceneObjectProperty::Scale.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(12)?;
                 writer.write_vector3_f32(&effect.scale)?;
 
                 writer.write_u8(SceneObjectProperty::Parent.into())?;
-                writer.write_u8(0)?;
+                writer.write_u8(2)?;
                 writer.write_u16(effect.parent)?;
 
                 writer.write_u8(SceneObjectProperty::None.into())?;
@@ -260,7 +276,6 @@ impl RoseFile for Scene {
             writer.write_vector3_f32(&object.bounding_box.min)?;
             writer.write_vector3_f32(&object.bounding_box.max)?;
         }
-
 
         Ok(())
     }
@@ -492,7 +507,7 @@ impl TryFrom<u16> for SceneCollisionType {
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
-pub enum  SceneObjectProperty {
+pub enum SceneObjectProperty {
     None = 0,
     Position = 1,
     Rotation = 2,
@@ -560,7 +575,7 @@ impl TryFrom<u8> for SceneObjectProperty {
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
-pub enum  SceneEffectType {
+pub enum SceneEffectType {
     Normal = 0,
     DayNight = 1,
     LightContainer = 2,
