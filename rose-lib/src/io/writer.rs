@@ -93,6 +93,13 @@ pub trait WriteRoseExt: Write + Seek {
     // Write a string with length prefix as u32
     fn write_string_u32(&mut self, string: &str) -> Result<(), Error>;
 
+    /// Write a string with a variable-byte prefixed length to the reader
+    ///
+    /// If the string is less than 128 characters the the first byte holds the
+    /// length. If the string is greater than or equal to128 characters then
+    /// first two bytes hold the length.
+    fn write_string_varbyte(&mut self, string: &str) -> Result<(), Error>;
+
     fn write_color3(&mut self, color: &Color3) -> Result<(), Error>;
     fn write_color4(&mut self, color: &Color4) -> Result<(), Error>;
 
@@ -107,6 +114,8 @@ pub trait WriteRoseExt: Write + Seek {
 
     fn write_quaternion(&mut self, q: &Quaternion) -> Result<(), Error>;
     fn write_quaternion_wxyz(&mut self, q: &Quaternion) -> Result<(), Error>;
+
+    fn position(&mut self) -> Result<u64, Error>;
 }
 
 impl<W> WriteRoseExt for W
@@ -205,6 +214,19 @@ where
         Ok(())
     }
 
+    fn write_string_varbyte(&mut self, string: &str) -> Result<(), Error> {
+        let len = string.len();
+        if len < 128 {
+            WriteRoseExt::write_u8(self, len as u8)?;
+        } else {
+            WriteRoseExt::write_u8(self, (len as u8) | 0b1000_0000)?;
+            WriteRoseExt::write_u8(self, (len >> 7) as u8)?;
+        }
+        self.write_all(string.as_bytes())?;
+
+        Ok(())
+    }
+
     fn write_color3(&mut self, color: &Color3) -> Result<(), Error> {
         WriteRoseExt::write_f32(self, color.r)?;
         WriteRoseExt::write_f32(self, color.g)?;
@@ -282,5 +304,9 @@ where
         WriteRoseExt::write_f32(self, q.y)?;
         WriteRoseExt::write_f32(self, q.z)?;
         Ok(())
+    }
+
+    fn position(&mut self) -> Result<u64, Error> {
+        Ok(self.seek(SeekFrom::Current(0))?)
     }
 }

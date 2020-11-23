@@ -106,6 +106,13 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
     /// Read a string with a u32 prefixed length from the reader
     fn read_string_u32(&mut self) -> Result<String, Error>;
 
+    /// Read a string with a variable-byte prefixed length from the reader
+    ///
+    /// If the string is less than 128 characters the the first byte holds the
+    /// length. If the string is greater than or equal to 128 characters then
+    /// first two bytes hold the length
+    fn read_string_varbyte(&mut self) -> Result<String, Error>;
+
     fn read_color3(&mut self) -> Result<Color3, Error>;
     fn read_color4(&mut self) -> Result<Color4, Error>;
 
@@ -121,6 +128,9 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
 
     fn read_quaternion(&mut self) -> Result<Quaternion, Error>;
     fn read_quaternion_wxyz(&mut self) -> Result<Quaternion, Error>;
+
+    /// Get the position of the stream
+    fn position(&mut self) -> Result<u64, Error>;
 
     // Read strings as wide strings (2-bytes)
     fn wide_strings(&self) -> bool;
@@ -178,6 +188,9 @@ where
     }
 
     fn read_string(&mut self, n: u64) -> Result<String, Error> {
+        if n == 0 {
+            return Ok(String::new());
+        }
         let mut buffer = Vec::new();
         let mut bytes = self.take(n as u64);
         bytes.read_to_end(&mut buffer)?;
@@ -203,6 +216,17 @@ where
     fn read_string_u32(&mut self) -> Result<String, Error> {
         let length = ReadRoseExt::read_u32(self)?;
         self.read_string(u64::from(length))
+    }
+
+    fn read_string_varbyte(&mut self) -> Result<String, Error> {
+        let first_byte = ReadRoseExt::read_u8(self)?;
+        if (first_byte & 128) == 0 {
+            return self.read_string(first_byte as u64);
+        }
+
+        let second_byte = ReadRoseExt::read_u8(self)?;
+        let length: u16 = ((second_byte as u16) << 7) | ((first_byte as u16) - 128);
+        self.read_string(length as u64)
     }
 
     fn read_color3(&mut self) -> Result<Color3, Error> {
@@ -292,6 +316,10 @@ where
         q.y = ReadRoseExt::read_f32(self)?;
         q.z = ReadRoseExt::read_f32(self)?;
         Ok(q)
+    }
+
+    fn position(&mut self) -> Result<u64, Error> {
+        Ok(self.seek(SeekFrom::Current(0))?)
     }
 
     fn wide_strings(&self) -> bool {
