@@ -1,7 +1,7 @@
 use std::f32;
 use std::fs;
 use std::fs::File;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::iter;
 use std::path::{Path, PathBuf};
 use std::process::exit;
@@ -9,15 +9,19 @@ use std::process::exit;
 use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use failure::{bail, Error};
 use image::{GrayImage, ImageBuffer};
-use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use roselib::files::zon::ZoneTileRotation;
 use roselib::files::*;
 use roselib::io::{RoseFile, RoseReader};
 
-const SERIALIZE_VALUES: [&'static str; 7] = ["idx", "lit", "stb", "wstb", "til", "zon", "zsc"];
-const DESERIALIZE_VALUES: [&'static str; 4] = ["idx", "lit", "stb", "zsc"];
+use rose_conv::{FromCsv, ToCsv};
+use rose_conv::{FromJson, ToJson};
+
+const SERIALIZE_VALUES: [&'static str; 8] =
+    ["idx", "lit", "stb", "stl", "wstb", "til", "zon", "zsc"];
+
+const DESERIALIZE_VALUES: [&'static str; 5] = ["idx", "lit", "stb", "stl", "zsc"];
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TilemapTile {
@@ -124,22 +128,6 @@ fn main() {
     }
 }
 
-fn rose_to_json<F>(path: &Path) -> Result<String, Error>
-where
-    F: RoseFile,
-    F: Serialize,
-{
-    Ok(serde_json::to_string_pretty(&F::from_path(&path)?)?)
-}
-
-fn json_to_rose<F>(path: &Path) -> Result<F, Error>
-where
-    F: RoseFile,
-    F: DeserializeOwned,
-{
-    Ok(serde_json::from_reader(File::open(&path)?)?)
-}
-
 fn serialize(matches: &ArgMatches) -> Result<(), Error> {
     let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
     let input = Path::new(matches.value_of("input").unwrap_or_default());
@@ -169,41 +157,34 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         .join(input.file_name().unwrap_or_default())
         .with_extension("");
 
-    if rose_type == "stb" || rose_type == "wstb" {
-        let out = out.with_extension("csv");
-
-        let stb = if rose_type == "stb" {
-            STB::from_path(input)?
-        } else {
+    let data = match rose_type.as_str() {
+        "stb" => STB::from_path(&input)?.to_csv()?,
+        "stl" => STL::from_path(&input)?.to_csv()?,
+        "idx" => IDX::from_path(&input)?.to_json()?,
+        "lit" => LIT::from_path(&input)?.to_json()?,
+        "til" => TIL::from_path(&input)?.to_json()?,
+        "zon" => ZON::from_path(&input)?.to_json()?,
+        "zsc" => ZSC::from_path(&input)?.to_json()?,
+        "wstb" => {
             let f = File::open(input)?;
             let mut reader = RoseReader::new(f);
             reader.set_wide_strings(true);
             let mut stb: STB = RoseFile::new();
             stb.read(&mut reader)?;
-            stb
-        };
-
-        let mut writer = csv::Writer::from_path(out)?;
-        writer.write_record(&stb.headers)?;
-        for row in stb.data {
-            writer.write_record(&row)?;
+            stb.to_csv()?
         }
-
-        return Ok(());
-    }
-
-    let json = match rose_type.as_str() {
-        "idx" => rose_to_json::<IDX>(&input)?,
-        "lit" => rose_to_json::<LIT>(&input)?,
-        "til" => rose_to_json::<TIL>(&input)?,
-        "zon" => rose_to_json::<ZON>(&input)?,
-        "zsc" => rose_to_json::<ZSC>(&input)?,
-        _ => bail!("Unsupported file type: {}", extension),
+        _ => bail!("Unsupported file type: {}", rose_type.as_str()),
     };
 
-    let out = out.with_extension("json");
+    let extension = if rose_type == "stb" || rose_type == "stl" {
+        "csv"
+    } else {
+        "json"
+    };
+
+    let out = out.with_extension(extension);
     let mut f = File::create(&out)?;
-    f.write_all(json.as_bytes())?;
+    f.write_all(data.as_bytes())?;
 
     Ok(())
 }
@@ -221,30 +202,17 @@ fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
         .join(input.file_name().unwrap_or_default())
         .with_extension(filetype);
 
-    if filetype.to_lowercase() == "stb" {
-        let mut stb = STB::new();
+    let mut data = String::new();
 
-        let mut reader = csv::Reader::from_path(input)?;
-        for header in reader.headers()? {
-            stb.headers.push(header.to_string())
-        }
-
-        for record in reader.records() {
-            let mut row = Vec::new();
-            for field in record?.iter() {
-                row.push(field.to_string());
-            }
-            stb.data.push(row);
-        }
-
-        stb.write_to_path(&out)?;
-        return Ok(());
-    }
+    let mut file = File::open(&input)?;
+    file.read_to_string(&mut data)?;
 
     match filetype {
-        "idx" => json_to_rose::<IDX>(&input)?.write_to_path(&out)?,
-        "lit" => json_to_rose::<LIT>(&input)?.write_to_path(&out)?,
-        "zsc" => json_to_rose::<ZSC>(&input)?.write_to_path(&out)?,
+        "stb" => STB::from_csv(&data)?.write_to_path(&out)?,
+        "stl" => stl::from_csv(&data)?.write_to_path(&out)?,
+        "idx" => IDX::from_json(&data)?.write_to_path(&out)?,
+        "lit" => IDX::from_json(&data)?.write_to_path(&out)?,
+        "zsc" => IDX::from_json(&data)?.write_to_path(&out)?,
         _ => bail!("Unsupported file type: {}", filetype),
     }
 
