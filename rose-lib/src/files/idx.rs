@@ -44,7 +44,7 @@ pub type IDX = VfsIndex;
 /// The index does not contain any actual asset data, only meta data about
 /// the file systems. Each file system in the index usually maps to a single
 /// `.vfs` file on disk.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct VfsIndex {
     pub base_version: i32,
     pub current_version: i32,
@@ -152,7 +152,7 @@ impl RoseFile for VfsIndex {
 /// Virtual file system
 ///
 /// Contains the metadata for a single file system.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct VfsMetadata {
     pub filename: PathBuf,
     pub files: Vec<VfsFileMetadata>,
@@ -168,7 +168,7 @@ impl VfsMetadata {
 /// Virtual file system file entry
 ///
 /// Contains the metadata for a single file in the file system
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct VfsFileMetadata {
     pub filepath: PathBuf,
     pub offset: i32,

@@ -52,30 +52,30 @@ impl str::FromStr for StringTableType {
 /// String Table Key
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct StringTableKey {
-    id: u32,
-    name: String,
+    pub id: u32,
+    pub name: String,
 }
 
 // String Table Normal Row Data
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct NormalRowData {
-    text: String,
+    pub text: String,
 }
 
 /// String Table Item Row Data
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct ItemRowData {
-    text: String,
-    description: String,
+    pub text: String,
+    pub description: String,
 }
 
 /// String Table Quest Row Data
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct QuestRowData {
-    text: String,
-    description: String,
-    start_message: String,
-    end_message: String,
+    pub text: String,
+    pub description: String,
+    pub start_message: String,
+    pub end_message: String,
 }
 
 /// String Table Row

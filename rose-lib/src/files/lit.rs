@@ -11,7 +11,7 @@ use crate::io::{ReadRoseExt, RoseFile, WriteRoseExt};
 /// Lightmap file
 pub type LIT = Lightmap;
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct Lightmap {
     pub objects: Vec<LightmapObject>,
     pub filenames: Vec<String>,
@@ -84,7 +84,7 @@ impl RoseFile for Lightmap {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct LightmapObject {
     pub id: i32,
     pub parts: Vec<LightmapPart>,
@@ -105,7 +105,7 @@ impl Default for LightmapObject {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct LightmapPart {
     pub name: String,
     pub id: i32,
