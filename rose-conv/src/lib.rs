@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use std::str::FromStr;
 
 use failure::{bail, Error};
@@ -97,6 +100,18 @@ pub trait FromCsv {
     fn from_csv(s: &str) -> Result<Self, Error>
     where
         Self: std::marker::Sized;
+
+    fn from_csv_path(p: &Path) -> Result<Self, Error>
+    where
+        Self: std::marker::Sized,
+    {
+        let mut s = String::new();
+
+        let mut f = File::open(p)?;
+        f.read_to_string(&mut s)?;
+
+        Self::from_csv(&s)
+    }
 }
 
 impl FromCsv for STB {
@@ -254,8 +269,8 @@ mod tests {
     macro_rules! test_csv {
         ($filetype: ident, $path: expr) => {{
             let orig_file = $filetype::from_path(&$path).unwrap();
-            let json_string = orig_file.to_csv().unwrap();
-            let new_file = $filetype::from_csv(&json_string).unwrap();
+            let csv_string = orig_file.to_csv().unwrap();
+            let new_file = $filetype::from_csv(&csv_string).unwrap();
             assert_eq!(orig_file, new_file);
         }};
     }

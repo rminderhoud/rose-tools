@@ -209,7 +209,7 @@ fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
 
     match filetype {
         "stb" => STB::from_csv(&data)?.write_to_path(&out)?,
-        "stl" => stl::from_csv(&data)?.write_to_path(&out)?,
+        "stl" => STL::from_csv(&data)?.write_to_path(&out)?,
         "idx" => IDX::from_json(&data)?.write_to_path(&out)?,
         "lit" => IDX::from_json(&data)?.write_to_path(&out)?,
         "zsc" => IDX::from_json(&data)?.write_to_path(&out)?,
