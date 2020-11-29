@@ -256,6 +256,18 @@ pub trait FromJson {
     {
         Ok(serde_json::from_reader(s.as_bytes())?)
     }
+
+    fn from_json_path(p: &Path) -> Result<Self, Error>
+    where
+        Self: std::marker::Sized + serde::de::DeserializeOwned,
+    {
+        let mut s = String::new();
+
+        let mut f = File::open(p)?;
+        f.read_to_string(&mut s)?;
+
+        Self::from_json(&s)
+    }
 }
 
 impl<F> FromJson for F where F: RoseFile {}
