@@ -1,6 +1,6 @@
 [package]
 name = "rose-conv"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Ralph Minderhoud <ralphminderhoud@gmail.com>"]
 homepage = "ralphminderhoud.com"
 edition = "2018"

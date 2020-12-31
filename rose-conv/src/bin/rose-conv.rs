@@ -18,8 +18,9 @@ use roselib::io::{RoseFile, RoseReader};
 use rose_conv::{FromCsv, ToCsv};
 use rose_conv::{FromJson, ToJson};
 
-const SERIALIZE_VALUES: [&'static str; 8] =
-    ["idx", "lit", "stb", "stl", "wstb", "til", "zon", "zsc"];
+const SERIALIZE_VALUES: [&'static str; 13] = [
+    "him", "idx", "lit", "stb", "stl", "wstb", "til", "tsi", "zmd", "zmo", "zms", "zon", "zsc",
+];
 
 const DESERIALIZE_VALUES: [&'static str; 5] = ["idx", "lit", "stb", "stl", "zsc"];
 
@@ -80,6 +81,13 @@ fn main() {
                         .long("type")
                         .takes_value(true)
                         .possible_values(&SERIALIZE_VALUES),
+                )
+                .arg(
+                    Arg::with_name("keep-extension")
+                        .long("keep-extension")
+                        .help("Keep the original file extension in addition to the next one, e.g. list_zone.stb.csv")
+                        .required(false)
+                        .takes_value(false)
                 ),
         )
         .subcommand(
@@ -125,6 +133,15 @@ fn main() {
 
     if let Err(e) = res {
         eprintln!("Error occured: {}", e);
+        let filename = match matches.subcommand() {
+            ("serialize", Some(matches)) => matches.value_of("input"),
+            ("deserialize", Some(matches)) => matches.value_of("input"),
+            _ => None,
+        };
+
+        if let Some(name) = filename {
+            eprintln!("\t{}", name);
+        }
     }
 }
 
@@ -158,11 +175,18 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         .with_extension("");
 
     let data = match rose_type.as_str() {
+        // CSV
         "stb" => STB::from_path(&input)?.to_csv()?,
         "stl" => STL::from_path(&input)?.to_csv()?,
+        // JSON
+        "him" => HIM::from_path(&input)?.to_json()?,
         "idx" => IDX::from_path(&input)?.to_json()?,
         "lit" => LIT::from_path(&input)?.to_json()?,
         "til" => TIL::from_path(&input)?.to_json()?,
+        "tsi" => TSI::from_path(&input)?.to_json()?,
+        "zmd" => ZMD::from_path(&input)?.to_json()?,
+        "zmo" => ZMO::from_path(&input)?.to_json()?,
+        "zms" => ZMS::from_path(&input)?.to_json()?,
         "zon" => ZON::from_path(&input)?.to_json()?,
         "zsc" => ZSC::from_path(&input)?.to_json()?,
         "wstb" => {
@@ -176,13 +200,21 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         _ => bail!("Unsupported file type: {}", rose_type.as_str()),
     };
 
-    let extension = if rose_type == "stb" || rose_type == "stl" {
+    let new_extension = if rose_type == "stb" || rose_type == "stl" {
         "csv"
     } else {
         "json"
     };
 
-    let out = out.with_extension(extension);
+    // If the keep-extension flag is present we prepend the original extension
+    // e.g. list_zone.stb.json
+    let new_extension = if matches.is_present("keep-extension") {
+        extension + "." + new_extension
+    } else {
+        String::from(new_extension)
+    };
+
+    let out = out.with_extension(new_extension);
     let mut f = File::create(&out)?;
     f.write_all(data.as_bytes())?;
 
