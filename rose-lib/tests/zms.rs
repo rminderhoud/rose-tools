@@ -14,6 +14,7 @@ fn read_zms() {
     let file1 = root.join("headbad01.zms");
     let file2 = root.join("stone014.zms");
     let file3 = root.join("cart01_ability01.zms");
+    let file4 = root.join("mob_wolf2.zms");
 
     let model1 = ZMS::from_path(&file1).unwrap();
     assert_eq!(model1.identifier.as_str(), "ZMS0008");
@@ -74,6 +75,26 @@ fn read_zms() {
     assert_eq!(model3.materials.len(), 2);
     assert_eq!(model3.strips.len(), 0);
     assert_eq!(model3.pool, 0);
+
+    let model4 = ZMS::from_path(&file4).unwrap();
+    assert_eq!(model4.identifier.as_str(), "ZMS0006");
+    assert_eq!(model4.format, 134);
+    assert_eq!(model4.positions_enabled(), true);
+    assert_eq!(model4.normals_enabled(), true);
+    assert_eq!(model4.colors_enabled(), false);
+    assert_eq!(model4.bones_enabled(), false);
+    assert_eq!(model4.tangents_enabled(), false);
+    assert_eq!(model4.uv1_enabled(), true);
+    assert_eq!(model4.uv2_enabled(), false);
+    assert_eq!(model4.uv3_enabled(), false);
+    assert_eq!(model4.uv4_enabled(), false);
+
+    assert_eq!(model4.bones.len(), 0);
+    assert_eq!(model4.vertices.len(), 76);
+    assert_eq!(model4.indices.len(), 84);
+    assert_eq!(model4.materials.len(), 5);
+    assert_eq!(model4.strips.len(), 0);
+    assert_eq!(model4.pool, 0);
 }
 
 #[test]

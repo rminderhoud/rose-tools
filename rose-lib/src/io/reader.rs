@@ -122,9 +122,11 @@ pub trait ReadRoseExt: Read + Seek + BufRead {
 
     fn read_vector3_f32(&mut self) -> Result<Vector3<f32>, Error>;
     fn read_vector3_i16(&mut self) -> Result<Vector3<i16>, Error>;
+    fn read_vector3_u32(&mut self) -> Result<Vector3<u32>, Error>;
 
     fn read_vector4_f32(&mut self) -> Result<Vector4<f32>, Error>;
     fn read_vector4_i16(&mut self) -> Result<Vector4<i16>, Error>;
+    fn read_vector4_u32(&mut self) -> Result<Vector4<u32>, Error>;
 
     fn read_quaternion(&mut self) -> Result<Quaternion, Error>;
     fn read_quaternion_wxyz(&mut self) -> Result<Quaternion, Error>;
@@ -282,6 +284,15 @@ where
         v.z = ReadRoseExt::read_i16(self)?;
         Ok(v)
     }
+
+    fn read_vector3_u32(&mut self) -> Result<Vector3<u32>, Error> {
+        let mut v = Vector3::<u32>::default();
+        v.x = ReadRoseExt::read_u32(self)?;
+        v.y = ReadRoseExt::read_u32(self)?;
+        v.z = ReadRoseExt::read_u32(self)?;
+        Ok(v)
+    }
+
     fn read_vector4_f32(&mut self) -> Result<Vector4<f32>, Error> {
         let mut v = Vector4::<f32>::new();
         v.w = ReadRoseExt::read_f32(self)?;
@@ -297,6 +308,15 @@ where
         v.x = ReadRoseExt::read_i16(self)?;
         v.y = ReadRoseExt::read_i16(self)?;
         v.z = ReadRoseExt::read_i16(self)?;
+        Ok(v)
+    }
+
+    fn read_vector4_u32(&mut self) -> Result<Vector4<u32>, Error> {
+        let mut v = Vector4::<u32>::default();
+        v.w = ReadRoseExt::read_u32(self)?;
+        v.x = ReadRoseExt::read_u32(self)?;
+        v.y = ReadRoseExt::read_u32(self)?;
+        v.z = ReadRoseExt::read_u32(self)?;
         Ok(v)
     }
 

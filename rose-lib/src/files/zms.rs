@@ -62,6 +62,112 @@ impl Mesh {
     pub fn uv4_enabled(&self) -> bool {
         (VertexFormat::UV4 as i32 & self.format) != 0
     }
+
+    pub fn read_version6<R: ReadRoseExt>(&mut self, reader: &mut R) -> Result<(), Error> {
+        self.format = reader.read_i32()?;
+        self.bounding_box.min = reader.read_vector3_f32()?;
+        self.bounding_box.max = reader.read_vector3_f32()?;
+
+        let bone_count = reader.read_u32()?;
+        for _ in 0..bone_count {
+            let _index = reader.read_u32()?;
+            let bone_index = reader.read_u32()?;
+            self.bones.push(bone_index as i16);
+        }
+
+        let vert_count = reader.read_u32()?;
+        for _ in 0..vert_count {
+            self.vertices.push(Vertex::new());
+        }
+
+        for i in 0..vert_count as usize {
+            let _index = reader.read_u32()?;
+            self.vertices[i].position = reader.read_vector3_f32()?;
+        }
+
+        if self.normals_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].normal = reader.read_vector3_f32()?;
+            }
+        }
+
+        if self.colors_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].color = reader.read_color4()?;
+            }
+        }
+
+        if self.bones_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].bone_weights = reader.read_vector4_f32()?;
+
+                let bone_indices = reader.read_vector4_u32()?;
+                self.vertices[i].bone_indices.w = bone_indices.w as i16;
+                self.vertices[i].bone_indices.x = bone_indices.x as i16;
+                self.vertices[i].bone_indices.y = bone_indices.y as i16;
+                self.vertices[i].bone_indices.z = bone_indices.z as i16;
+            }
+        }
+
+        if self.tangents_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].tangent = reader.read_vector3_f32()?;
+            }
+        }
+
+        if self.uv1_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].uv1 = reader.read_vector2_f32()?;
+            }
+        }
+
+        if self.uv2_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].uv2 = reader.read_vector2_f32()?;
+            }
+        }
+
+        if self.uv3_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].uv3 = reader.read_vector2_f32()?;
+            }
+        }
+
+        if self.uv4_enabled() {
+            for i in 0..vert_count as usize {
+                let _index = reader.read_u32()?;
+                self.vertices[i].uv4 = reader.read_vector2_f32()?;
+            }
+        }
+
+        let index_count = reader.read_u32()?;
+        for _ in 0..index_count {
+            let _index = reader.read_u32()?;
+            let indices_i32 = reader.read_vector3_u32()?;
+
+            let mut indices_i16 = Vector3::<i16>::default();
+            indices_i16.x = indices_i32.x as i16;
+            indices_i16.y = indices_i32.y as i16;
+            indices_i16.z = indices_i32.z as i16;
+
+            self.indices.push(indices_i16);
+        }
+
+        let material_count = reader.read_u32()?;
+        for _ in 0..material_count {
+            let _index = reader.read_u32()?;
+            self.materials.push(reader.read_u32()? as i16);
+        }
+
+        Ok(())
+    }
 }
 
 impl RoseFile for Mesh {
@@ -73,10 +179,15 @@ impl RoseFile for Mesh {
         self.identifier = reader.read_cstring()?;
 
         let version = match self.identifier.as_str() {
+            "ZMS0006" => 6,
             "ZMS0007" => 7,
             "ZMS0008" => 8,
             _ => bail!(format!("Unsupported Mesh version: {}", self.identifier)),
         };
+
+        if version == 6 {
+            return self.read_version6(reader);
+        }
 
         self.format = reader.read_i32()?;
         self.bounding_box.min = reader.read_vector3_f32()?;
