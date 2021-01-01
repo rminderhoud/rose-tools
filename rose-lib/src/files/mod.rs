@@ -1,6 +1,7 @@
 // pub mod idx;
 pub mod him;
 pub mod idx;
+pub mod ifo;
 pub mod lit;
 pub mod stb;
 pub mod stl;
@@ -14,6 +15,7 @@ pub mod zsc;
 
 pub use self::him::HIM;
 pub use self::idx::IDX;
+pub use self::ifo::IFO;
 pub use self::lit::LIT;
 pub use self::stb::STB;
 pub use self::stl::STL;

@@ -18,8 +18,9 @@ use roselib::io::{RoseFile, RoseReader};
 use rose_conv::{FromCsv, ToCsv};
 use rose_conv::{FromJson, ToJson};
 
-const SERIALIZE_VALUES: [&'static str; 13] = [
-    "him", "idx", "lit", "stb", "stl", "wstb", "til", "tsi", "zmd", "zmo", "zms", "zon", "zsc",
+const SERIALIZE_VALUES: [&'static str; 14] = [
+    "him", "idx", "ifo", "lit", "stb", "stl", "wstb", "til", "tsi", "zmd", "zmo", "zms", "zon",
+    "zsc",
 ];
 
 const DESERIALIZE_VALUES: [&'static str; 5] = ["idx", "lit", "stb", "stl", "zsc"];
@@ -181,6 +182,7 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         // JSON
         "him" => HIM::from_path(&input)?.to_json()?,
         "idx" => IDX::from_path(&input)?.to_json()?,
+        "ifo" => IFO::from_path(&input)?.to_json()?,
         "lit" => LIT::from_path(&input)?.to_json()?,
         "til" => TIL::from_path(&input)?.to_json()?,
         "tsi" => TSI::from_path(&input)?.to_json()?,
