@@ -329,18 +329,18 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
             let him_path = map_dir.join(&him_name);
 
             let him = HIM::from_path(&him_path).unwrap();
-            if him.height != 65 || him.width != 65 {
+            if him.length != 65 || him.width != 65 {
                 bail!(
                     "Unexpected HIM dimensions. Expected 65x65: {} ({}x{})",
                     &him_path.to_str().unwrap_or(&him_name),
                     him.width,
-                    him.height
+                    him.length
                 );
             }
 
-            for h in 0..him.height {
+            for h in 0..him.length {
                 for w in 0..him.width {
-                    let height = him.heights[h as usize][w as usize];
+                    let height = him.height(h as usize, w as usize);
 
                     if (height > max_height) || (max_height.is_nan()) {
                         max_height = height;

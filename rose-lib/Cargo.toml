@@ -1,6 +1,6 @@
 [package]
 name = "roselib"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Ralph Minderhoud <mail@ralphminderhoud.com>"]
 homepage = "ralphminderhoud.com"
 edition = "2018"
