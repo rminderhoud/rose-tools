@@ -1,5 +1,4 @@
-use roselib::files::TIL;
-use roselib::files::ZON;
+use roselib::files::{HIM, TIL, ZON};
 use roselib::io::RoseFile;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -13,6 +12,7 @@ fn main() {
     }
     let cmd = args.remove(0);
     match cmd.as_str() {
+        "him_range" => him_range(args.as_slice()),
         "til_brushes" => til_brush_info(args.as_slice()),
         "zon_brushes" => zon_brush_info(args.as_slice()),
         _ => {
@@ -20,6 +20,27 @@ fn main() {
             ::std::process::exit(1);
         }
     }
+}
+
+fn him_range(paths: &[String]) {
+    let mut min_height = 9999999.0;
+    let mut max_height = -9999999.0;
+
+    for him_path in paths {
+        let him_path = Path::new(him_path);
+        let him = HIM::from_path(&him_path).expect("Invalid him file");
+
+        if him.min_height < min_height {
+            min_height = him.min_height;
+        }
+
+        if him.max_height > max_height {
+            max_height = him.max_height;
+        }
+    }
+
+    println!("Min height: {}", min_height);
+    println!("Max height: {}", max_height);
 }
 
 fn til_brush_info(paths: &[String]) {
@@ -42,7 +63,6 @@ fn til_brush_info(paths: &[String]) {
                 } else {
                     map_brushes.insert(til_parent, vec![tile.brush_id]);
                 }
-
             }
         }
     }
@@ -65,7 +85,8 @@ fn til_brush_info(paths: &[String]) {
 
     println!(
         "MAX: {} unique brushes used in {}",
-        max_map_brush_count, max_map_path.display(),
+        max_map_brush_count,
+        max_map_path.display(),
     );
 }
 
