@@ -8,7 +8,8 @@ use std::process::exit;
 
 use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use failure::{bail, Error};
-use image::{GrayImage, ImageBuffer};
+use image::io::Reader as ImageReader;
+use image::{GrayImage, ImageBuffer, RgbaImage};
 use serde::{Deserialize, Serialize};
 
 use roselib::files::zon::ZoneTileRotation;
@@ -66,6 +67,16 @@ fn main() {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("iconsheet")
+                .about("Convert ROSE iconsheet to icon files")
+                .arg(
+                    Arg::with_name("iconsheets")
+                        .help("Path to iconsheet")
+                        .required(true)
+                        .multiple(true),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("serialize")
                 .visible_alias("se")
                 .about("Serialize a ROSE File into JSON (CSV for STB/STL).")
@@ -106,7 +117,18 @@ fn main() {
                     Arg::with_name("input")
                         .help("Path to JSON/CSV file")
                         .required(true),
-                ),
+                )
+                .arg(
+                    Arg::with_name("output")
+                        .help("Path to output file location (Optional)")
+                        .long_help(
+"Path to output file location (Optional). This will create a file at
+the path location regardless of file extension. This option takes
+priority over the output directory flag (`-o`)."
+                        )
+                        .conflicts_with("out_dir")
+                )
+                ,
         )
         .get_matches();
 
@@ -126,6 +148,7 @@ fn main() {
         ("map", Some(matches)) => convert_map(matches),
         ("serialize", Some(matches)) => serialize(matches),
         ("deserialize", Some(matches)) => deserialize(matches),
+        ("iconsheet", Some(matches)) => convert_iconsheets(matches),
         _ => {
             eprintln!("ROSE Online Converter. Run with `--help` for more info.");
             exit(1);
@@ -224,7 +247,6 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
 }
 
 fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
-    let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
     let filetype = matches.value_of("type").unwrap_or_default();
     let input = Path::new(matches.value_of("input").unwrap_or_default());
 
@@ -232,9 +254,15 @@ fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
         bail!("File does not exist: {}", input.display());
     }
 
-    let out = out_dir
-        .join(input.file_name().unwrap_or_default())
-        .with_extension(filetype);
+    // Use the output arg if it's set, otherwise use the output directory option
+    let out = if let Some(s) = matches.value_of("output") {
+        PathBuf::from(s)
+    } else {
+        let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
+        out_dir
+            .join(input.file_name().unwrap_or_default())
+            .with_extension(filetype)
+    };
 
     let mut data = String::new();
 
@@ -452,6 +480,68 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
     Ok(())
 }
 
+fn convert_iconsheets(matches: &ArgMatches) -> Result<(), Error> {
+    let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
+    let iconsheet_paths: Vec<PathBuf> = matches
+        .values_of("iconsheets")
+        .unwrap_or_default()
+        .map(|p| PathBuf::from(p))
+        .collect();
+
+    let convert_iconsheet = |iconsheet_path: &Path| -> Result<(), Error> {
+        if !iconsheet_path.exists() {
+            bail!("File does not exist: {}", iconsheet_path.display());
+        }
+
+        let img = ImageReader::open(iconsheet_path)?.decode()?.into_rgba8();
+
+        // ROSE Icons are 40 pixels x 40 pixels
+        let icon_x_count = (img.width() as f32 / 40.0).floor() as u32;
+        let icon_y_count = (img.height() as f32 / 40.0).floor() as u32;
+
+        let mut icon_number = 0;
+        for icon_y in 0..icon_y_count {
+            for icon_x in 0..icon_x_count {
+                let mut icon = RgbaImage::new(40, 40);
+
+                for pixel_y in 0..40 {
+                    for pixel_x in 0..40 {
+                        let x = (icon_x * 40) + pixel_x;
+                        let y = (icon_y * 40) + pixel_y;
+                        let pixel = img.get_pixel(x, y);
+                        icon.put_pixel(pixel_x, pixel_y, *pixel);
+                    }
+                }
+
+                let icon_name = iconsheet_path.file_stem().unwrap();
+                let icon_path = out_dir
+                    .join(format!("{}_{}", icon_name.to_str().unwrap(), icon_number))
+                    .with_extension("png");
+                dbg!(&icon_path);
+                icon.save(&icon_path)?;
+
+                icon_number += 1;
+            }
+        }
+
+        Ok(())
+    };
+
+    let mut all_succeeded = true;
+    for iconsheet_path in iconsheet_paths {
+        if let Err(e) = convert_iconsheet(&iconsheet_path) {
+            all_succeeded = false;
+            eprintln!("{}", e);
+        }
+    }
+
+    if !all_succeeded {
+        bail!("Failed to convert all tilesheets");
+    }
+
+    eprintln!("Done.");
+    Ok(())
+}
 /*
 fn zms_to_obj(input: File, output: File) -> Result<(), Error> {
     let mut writer = BufWriter::new(output);

@@ -1,6 +1,6 @@
 [package]
 name = "rose-conv"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Ralph Minderhoud <ralphminderhoud@gmail.com>"]
 homepage = "ralphminderhoud.com"
 edition = "2018"
@@ -9,7 +9,7 @@ edition = "2018"
 clap = "2.29"
 csv = "1"
 failure = "0.1"
-image = "0.18"
+image = "0.23"
 roselib = {path = "../rose-lib"}
 serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0"
