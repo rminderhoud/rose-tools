@@ -132,17 +132,6 @@ priority over the output directory flag (`-o`)."
         )
         .get_matches();
 
-    // Setup output directory
-    let out_dir = Path::new(matches.value_of("out_dir").unwrap());
-    if let Err(e) = fs::create_dir_all(&out_dir) {
-        eprintln!(
-            "Error creating output directory {}: {}",
-            out_dir.to_str().unwrap_or(""),
-            e
-        );
-        exit(1);
-    }
-
     // Run subcommands
     let res = match matches.subcommand() {
         ("map", Some(matches)) => convert_map(matches),
@@ -169,6 +158,17 @@ priority over the output directory flag (`-o`)."
     }
 }
 
+fn create_output_dir(out_dir: &Path) -> Result<(), Error> {
+    if let Err(e) = fs::create_dir_all(&out_dir) {
+        bail!(
+            "Error creating output directory {}: {}",
+            out_dir.to_str().unwrap_or(""),
+            e
+        );
+    }
+    Ok(())
+}
+
 fn serialize(matches: &ArgMatches) -> Result<(), Error> {
     let out_dir = Path::new(matches.value_of("out_dir").unwrap_or_default());
     let input = Path::new(matches.value_of("input").unwrap_or_default());
@@ -193,10 +193,6 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
     } else {
         String::from(input_type)
     };
-
-    let out = out_dir
-        .join(input.file_name().unwrap_or_default())
-        .with_extension("");
 
     let data = match rose_type.as_str() {
         // CSV
@@ -239,7 +235,14 @@ fn serialize(matches: &ArgMatches) -> Result<(), Error> {
         String::from(new_extension)
     };
 
-    let out = out.with_extension(new_extension);
+    let out = out_dir
+        .join(input.file_name().unwrap_or_default())
+        .with_extension(new_extension);
+
+    if let Some(p) = out.parent() {
+        create_output_dir(p)?;
+    }
+
     let mut f = File::create(&out)?;
     f.write_all(data.as_bytes())?;
 
@@ -263,6 +266,10 @@ fn deserialize(matches: &ArgMatches) -> Result<(), Error> {
             .join(input.file_name().unwrap_or_default())
             .with_extension(filetype)
     };
+
+    if let Some(p) = out.parent() {
+        create_output_dir(p)?;
+    }
 
     let mut data = String::new();
 
@@ -416,6 +423,7 @@ fn convert_map(matches: &ArgMatches) -> Result<(), Error> {
 
     let map_name = map_dir.file_name().unwrap().to_str().unwrap();
     let out_dir = Path::new(matches.value_of("out_dir").unwrap_or("out"));
+    create_output_dir(out_dir)?;
 
     // -- Heightmap image
     let delta_height = max_height - min_height;
@@ -527,6 +535,8 @@ fn convert_iconsheets(matches: &ArgMatches) -> Result<(), Error> {
         Ok(())
     };
 
+    create_output_dir(out_dir)?;
+
     let mut all_succeeded = true;
     for iconsheet_path in iconsheet_paths {
         if let Err(e) = convert_iconsheet(&iconsheet_path) {
@@ -542,6 +552,7 @@ fn convert_iconsheets(matches: &ArgMatches) -> Result<(), Error> {
     eprintln!("Done.");
     Ok(())
 }
+
 /*
 fn zms_to_obj(input: File, output: File) -> Result<(), Error> {
     let mut writer = BufWriter::new(output);
