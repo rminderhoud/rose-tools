@@ -44,7 +44,7 @@ fn him_range(paths: &[String]) {
 }
 
 fn til_brush_info(paths: &[String]) {
-    let mut map_brushes: HashMap<&Path, Vec<u8>> = HashMap::new();
+    let mut map_brushes: HashMap<&Path, Vec<i32>> = HashMap::new();
 
     let mut max_map_path = PathBuf::new();
     let mut max_map_brush_count = 0;
@@ -58,10 +58,10 @@ fn til_brush_info(paths: &[String]) {
             for tile in tile_row {
                 if map_brushes.contains_key(til_parent) {
                     if let Some(v) = map_brushes.get_mut(til_parent) {
-                        v.push(tile.brush_id);
+                        v.push(tile.tile_id);
                     }
                 } else {
-                    map_brushes.insert(til_parent, vec![tile.brush_id]);
+                    map_brushes.insert(til_parent, vec![tile.tile_id]);
                 }
             }
         }
